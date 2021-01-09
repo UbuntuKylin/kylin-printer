@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=kylin-printer
+Exec=/usr/bin/kylin-printer
+Terminal=false
+Type=Application
