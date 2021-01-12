@@ -9,6 +9,9 @@
 #include <qapt/debfile.h>
 #include <qapt/package.h>
 #include <qapt/transaction.h>
+
+
+
 enum class ukuiAptError : int
 {
     UKUI_APT_SUCCESS = 0,
@@ -32,6 +35,9 @@ public:
     ukuiApt();
     explicit ukuiApt(QString debName);
     ~ukuiApt();
+
+
+
     //Apt
     bool isPackageInSourceList(QString pkgName);
     //
@@ -63,6 +69,7 @@ private:
 
 Q_SIGNALS:
     void reportInstallStatus(ukuiInstallStatus status);
+    void alreadyInstallSignal();                            //发送已经安装的信号
 private Q_SLOTS:
     void onInstallStatusChanged(QApt::TransactionStatus status);
     void onInstallErrorOccured(QApt::ErrorCode status);

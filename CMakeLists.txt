@@ -43,3 +43,7 @@ target_link_libraries(kylin-printer "-lpthread -lz")
 target_link_libraries(kylin-printer "-lcups")
 #deb install
 target_link_libraries(kylin-printer "-lQApt")
+
+########### install ###############
+install(TARGETS kylin-printer DESTINATION /usr/bin/)
+install(FILES ${PROJECT_SOURCE_DIR}/kylin-printer.desktop DESTINATION /etc/xdg/autostart/)
