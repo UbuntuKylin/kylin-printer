@@ -137,6 +137,7 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch2(QString printerM
 
     QMap<int, QStringList> ret;
     ret.clear();
+    int numOfMatchedPPD = 0;
     int size = tempPrinterModel.size();
     for (int i = size ; i > 2; i--)
     {
@@ -191,18 +192,24 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch2(QString printerM
 
                     if (ret.find(i) == ret.end())
                     {
+                        numOfMatchedPPD++;
                         tempMakeAndModel.append(map[keyPPDs].ppdname);
                         ret.insert((i), tempMakeAndModel);
                     }
                     else
                     {
+                        numOfMatchedPPD++;
                         ret[i].append(map[keyPPDs].ppdname);
                     }
+                }
+                if(3 == numOfMatchedPPD)
+                {
+                    break;
                 }
             }
         }
 
-        if (exactMatchFlag)
+        if (exactMatchFlag || (3 == numOfMatchedPPD))
         {
             break;
         }
