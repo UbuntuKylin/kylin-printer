@@ -1,7 +1,6 @@
 #include <QDebug>
 #include <QFileInfo>
 #include "ukuiApt.h"
-#include "manualinstallwindow.h"
 
 
 static void dgbPrintPackage(QApt::DebFile *debFile)
@@ -44,8 +43,6 @@ ukuiApt::ukuiApt(QString debName) : m_backend(nullptr),
                                     m_debFile(nullptr),
                                     m_trans(nullptr)
 {
-    ManualInstallWindow *manual = new ManualInstallWindow;
-    connect(this ,&ukuiApt::alreadyInstallSignal,manual,&ManualInstallWindow::alreadyInstallSlot);
 
     if (initial() == false)
         return;

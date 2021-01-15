@@ -79,6 +79,7 @@ void ManualInstallWindow::dropEvent(QDropEvent *event) //放下事件
 
                 connect(m_apt, &ukuiApt::reportInstallStatus,
                         this, &ManualInstallWindow::onPackageInstalled);
+                connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
                 if(m_apt->install())
                 {
                     installingTimer->start(100);
