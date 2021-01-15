@@ -116,7 +116,7 @@ QString getDeivceTypeFromPath(const QString &path)
     for (int i = 0; i < bInterfaceClassPathList.size(); i++) {
         bInterfaceClass = getRetFromCommand(QStringList{"cat", bInterfaceClassPathList.at(i)});
         if (bInterfaceClass == "00" || bInterfaceClass == "ff"){
-            ;
+            continue;
         }
         res = bInterfaceClass;
     }

@@ -23,7 +23,7 @@ signals:
     void matchFailed();
     void matchResultSignal(resultMap res);
 public slots:
-    void initPPDMatch(QString printerName, myMap data, int type);
+    void initPPDMatch(QString bandName, QString printerName, myMap data, int type);
 
 private:
     QMap<QString, QMap<QString, PPDsAndAttr>> originData;

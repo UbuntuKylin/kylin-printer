@@ -2,26 +2,35 @@
 
 #define g_cupsConnection (CupsConnection4PPDs::getInstance()) //CUPS连接建立实例化
 
+PopWindow *PopWindow ::popMutual = nullptr;
 PopWindow::PopWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     // qDebug() << "pop pid" << QThread::currentThreadId();
     int WIDTH = 413;
     int HEIGHT = 188;
+    popMutual = this;
+
     this->setFixedSize(WIDTH, HEIGHT);
     QScreen *screen = QGuiApplication::primaryScreen();
     this->move(screen->geometry().topRight());
     setWindowTitle(tr("打印机"));
     setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     //    move((screen->geometry().width() - WIDTH) /2,(screen->geometry().height() - HEIGHT) / 2);
-    initControls();                                          //初始化控件
-    initPopWindow();                                         //初始化弹窗
-    manual = new ManualInstallWindow;                        //手动安装驱动界面
+    initControls();                                           //初始化控件
+    initPopWindow();                                          //初始化弹窗
+    manual = new ManualInstallWindow;                         //手动安装驱动界面
+    succeed_fail = new SuccedFailWindow;
+    property = new PropertyWindow;
     DeviceMonitor::getInstance()->setFindPrinterOnly = true; //为方便测试，默认false:可以检测U盘或打印机USB接口;如果是true：则只能检测打印机
+//    ukuiPrinter::getInstance().addPrinter("usb://Canon/LBP251?serial=d8492fe8aa5e",
+//                                          "LBP251-TEST",
+//                                          "lsb/usr/CNRCUPSLBP251ZK.ppd",
+//                                          "");
     DeviceMonitor::getInstance()->start();
     QObject::connect(DeviceMonitor::getInstance(), &DeviceMonitor::findUsbConnect, [=](const DeviceInformation &test) {
         printer = test;
-        emit monitorDriver(test, false); //两个参数:1.打印机信息2.是否安装成功；测试时直接改变true或false就可以
+        emit monitorDriver(test, true); //两个参数:1.打印机信息2.是否安装成功；测试时直接改变true或false就可以
 
         isExistDriver = true;
     });
@@ -51,7 +60,8 @@ PopWindow::PopWindow(QWidget *parent)
     connect(pFindPPDs, &QThread::finished, cmdFindPPDs, &QObject::deleteLater); //挂载
     connect(this, &PopWindow::signalFindPPDsThread, cmdFindPPDs, &FindPPDsThread::initPPDMapConstruct);
     connect(cmdFindPPDs, SIGNAL(gotAllHandledPPDs(myMap)), this, SLOT(gotAllHandledPPDs(myMap))); //获取到所有PPD文件列表的初始map
-    connect(manual, &ManualInstallWindow::updatePpdList, cmdFindPPDs, &FindPPDsThread::initPPDMapConstruct);
+    connect(manual, SIGNAL(updatePpdList()), this, SLOT(prematchResultSlot()));
+
     qRegisterMetaType<myMap>("myMap"); //注册自己的类型，必须！！！！！
 
     pFindPPDs->start();
@@ -68,9 +78,12 @@ PopWindow::PopWindow(QWidget *parent)
     cmdMatchPPDs->moveToThread(pFindPPDs);
 
     connect(pMatchPPDs, &QThread::finished, cmdMatchPPDs, &QObject::deleteLater); //挂载
-    connect(this, SIGNAL(signalMatchPPDsThread(QString, myMap, int)), cmdMatchPPDs, SLOT(initPPDMatch(QString, myMap, int)));
+    connect(this, SIGNAL(signalMatchPPDsThread(QString, QString, myMap, int)), cmdMatchPPDs, SLOT(initPPDMatch(QString, QString, myMap, int)));
     connect(cmdMatchPPDs, &MatchPPDsThread::matchFailed, this, [=] { qDebug() << "查询失败！"; }); //直接失败
     connect(cmdMatchPPDs, SIGNAL(matchResultSignal(resultMap)), this, SLOT(matchResultSlot(resultMap)));
+
+    //匹配成功后发送给手动界面消息
+    connect(this,&PopWindow::matchSuccessSignal,manual,&ManualInstallWindow::matchSuccessSlot);
     qRegisterMetaType<resultMap>("resultMap"); //注册自己的类型，必须！！！！！
 
     pFindPPDs->start();
@@ -80,10 +93,17 @@ PopWindow::PopWindow(QWidget *parent)
     connect(findTime, &QTimer::timeout, this, [=] { qDebug() << "****" << timeTag++; }); //开始查找计时超过10秒则未找到要手动安装
     connect(this, &PopWindow::monitorDriver, this, &PopWindow::popDisplay);
     connect(manualInstallBtn, &QPushButton::clicked, this, &PopWindow::showManualWindow);
-    connect(this, SIGNAL(signalClickManualButton(QString, QString, QString)),
-            manual, SLOT(onShowManualWindow(QString, QString, QString)));
+    connect(this, SIGNAL(signalClickManualButton(QString, QString, QString,QStringList ,bool )),
+            manual, SLOT(onShowManualWindow(QString, QString, QString,QStringList ,bool )));
     connect(printTestBtn, &QPushButton::clicked, this, &PopWindow::print); //绑定打印测试页信号
+    connect(deviceViewBtn,&QPushButton::clicked,this,&PopWindow::deviceNameSlot);
+    connect(this,&PopWindow::printerNameSignal,property,&PropertyWindow::displayDevice);//查看设备
+
+//    connect(this,&PopWindow::basicParameter,manual,&ManualInstallWindow:);
+
     connect(closeButton, &QPushButton::clicked, this, &PopWindow::hide);
+
+//    connect(succeed_fail,&SuccedFailWindow::printTestSignal,this,&PopWindow::print);
     //必须在检测插拔的槽函数后执行,先检测是否插拔再执行线程
 }
 
@@ -139,8 +159,6 @@ void PopWindow::initPopWindow()
 void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
 {
     //标题栏各个按钮
-    QStringList qlists = QIcon::themeSearchPaths();
-    QString name = QIcon::themeName();
     titlePictureBtn->setIcon(QIcon(":/svg/printer_logo.svg"));
     titlePictureBtn->setFixedSize(24, 24);
     titlePictureBtn->setIconSize(QSize(24, 24));
@@ -164,7 +182,7 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     picButton->setStyleSheet("border-radius:4px;");
     isMonitorEdit->setFixedSize(300, 25);
     isMonitorEdit->setFocusPolicy(Qt::NoFocus);
-    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + " " + printerDevice.model);
+    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + "+" + printerDevice.model);
     isMonitorEdit->setStyleSheet("background-color:pink;/*QLineEdit{border:1px solid rgba(255,0,0,0.5);}*/");
     isMonitorEdit->setStyleSheet("font:14px;");
 
@@ -179,7 +197,7 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     //是否安装成功
     isSuccesslb->setFixedSize(120, 20);
     isSucceed = isSuccess;
-    searchResult = 0;
+    searchResult = 0 ;
     //底部部分
     printTestBtn->setText("打印测试");
     printTestBtn->setFixedSize(120, 36);
@@ -249,6 +267,7 @@ void PopWindow::setPopWindow()
     mainLayout->setSpacing(2);
     mainLayout->setMargin(0);
     mainWid->setLayout(mainLayout);
+
     mainWid->setObjectName("mainWid");
     mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);border-radius:6px ;background-color:#FFFFFF;}"); //主窗体圆角
     this->setWindowFlags((Qt::FramelessWindowHint));                                                                    //设置窗体无边框**加窗管协议后要将此注释调**
@@ -270,6 +289,7 @@ void PopWindow::matchResultSlot(resultMap res)
     qDebug() << res.second;
     if (res.second)
     {
+        isExact = res.second;
         qDebug() << "有精准匹配的PPD！";
         qDebug() << "PPD名字是" << res.first.first();
 
@@ -277,9 +297,11 @@ void PopWindow::matchResultSlot(resultMap res)
         m_printer.ppdName = res.first.first().at(0).toStdString();
         //emit result(res.)//发送给鑫哥,鑫哥返回一个是否安装成功
         searchResult = 1;
+
     }
     else
     {
+        isExact = res.second;
         qDebug() << "没有精准匹配的PPD！";
         foreach (auto it, res.first.keys())
         {
@@ -294,20 +316,28 @@ void PopWindow::matchResultSlot(resultMap res)
         QMap<int, QStringList>::iterator it = res.first.end();
         it--;
         qDebug() << "其中最接近的是" << (it.value());
-        qDebug() << "模糊:" << printer.uri << it.value().at(0) << printer.vendor;
+        ppdList = it.value();
+        qDebug() << "模糊:" << printer.uri << ppdList.at(0) << printer.vendor;
         searchResult = 2;
+        m_printer.ppdName = res.first.first().at(0).toStdString();
+
     }
+
+    //更新manual三行信息
+    emit matchSuccessSignal(printer.vendor+" "+printer.model,"Office",ppdList);
+
 }
 
 //气泡弹窗显示
 void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
-    QString name = printerDevice.vendor + QString("_") + printerDevice.model + "_TEST";
+    name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();
     m_printer.uri = printerDevice.uri.toStdString();
     m_printer.prodect = printerDevice.model.toStdString();
-    //m_printer.
+
+
     //    根据打印机型号等信息调用接口查找并安装。之后安装后会返回成功与否isSuccess
     setControls(printerDevice, isSuccess); //这里先假设为true待调用接口后具体值由接口返回
     setPopWindow();
@@ -315,8 +345,9 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
     {
         qDebug() << "气泡弹出";
         qDebug() << i;
-        timer->start(750); //动态加载loading图片
-        QString temp = printerDevice.vendor + " " + printerDevice.model;
+//        qDebug()<<"不带好的撒活动那活动"<<m_printer.name.c_str()<<m_printer.uri.c_str()<<m_printer.ppdName.c_str();
+        timer->start(150); //动态加载loading图片
+        QString temp = name;
         qDebug() << "timeTag 判断";
         if (timeTag > 10)
         {
@@ -327,14 +358,14 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 
             if (canFindPPD && (!mymap.isEmpty()))
             {
-                signalMatchPPDsThread(temp, mymap, USB);
+                signalMatchPPDsThread(printerDevice.vendor,printerDevice.model, mymap, USB);
             }
             else
             {
                 QTimer::singleShot(1000 * (10 - timeTag), [=]() {
                     if (canFindPPD && (!mymap.isEmpty()))
                     {
-                        signalMatchPPDsThread(temp, mymap, USB);
+                        signalMatchPPDsThread(printerDevice.vendor,printerDevice.model, mymap, USB);
                     }
                     else
                     {
@@ -358,17 +389,20 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 void PopWindow::loadingPicDisplay()
 {
     loadPic->setIcon(QIcon::fromTheme("ukui-loading-" + QString::number(i % 8)));
+    i%=8;
+    i++;
     if (searchResult == 0)
     {
         return;
     }
     if (searchResult == 1)
     {
+        //TODO:ui和功能分开
         bool ret = ukuiPrinter::getInstance().addPrinter(
-            m_printer.uri,
-            m_printer.name,
-            m_printer.ppdName,
-            "");
+                    m_printer.uri,
+                    m_printer.name,
+                    m_printer.ppdName,
+                    "");
         if (ret == true)
         {
             isSuccesslb->setText("安装成功!");
@@ -393,6 +427,8 @@ void PopWindow::loadingPicDisplay()
         deviceViewBtn->hide();
         manualInstallBtn->show();
         timer->stop();
+        emit basicParameter(m_printer.name.c_str(),m_printer.uri.c_str(),ppdList.at(0));
+//        qDebug()<<"PopWindow:"<<m_printer.name.c_str()<<"       "<<m_printer.uri.c_str()<<"   "<<ppdList.at(0);
     }
 }
 
@@ -401,13 +437,39 @@ void PopWindow::print()
     qDebug() << "StringList的ppd文件";
     //参数为StringList的ppd文件
     //    emit printSignal(QStringList);
-    const QString testFileName = "/usr/share/cups/data/testprint";
-    ukuiPrinter::getInstance().printTestPage(m_printer.name,testFileName.toStdString());
+    const QString testFileName = "/usr/share/cups/data/default-testpage.pdf";
+    bool res = false;
+    res = ukuiPrinter::getInstance().printTestPage(m_printer.name,testFileName.toStdString());
+    qInfo() << "======================打印测试页结果为================";
+    qInfo() << m_printer.name.c_str();
+    qInfo() << res;
 }
 
 void PopWindow::showManualWindow()
 {
 
     //    manual->show();
-    emit this->signalClickManualButton(m_printer.vendor.c_str(), m_printer.prodect.c_str(), m_printer.uri.c_str());
+    emit this->signalClickManualButton(m_printer.vendor.c_str(), m_printer.prodect.c_str(), m_printer.uri.c_str(), ppdList, isExact);
+}
+
+void PopWindow::prematchResultSlot()
+{
+    qDebug() << "prematchResultSlot";
+    emit signalFindPPDsThread();
+
+    QString temp = m_printer.vendor.c_str();
+    temp.append(" ");
+    temp.append(m_printer.prodect.c_str());
+
+
+    QTimer::singleShot(10000, [=]() {
+        signalMatchPPDsThread(m_printer.vendor.c_str(),m_printer.prodect.c_str(), mymap, USB);
+    });
+
+
+}
+
+void PopWindow::deviceNameSlot()
+{
+    emit printerNameSignal(name,m_printer.ppdName.c_str());
 }

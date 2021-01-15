@@ -1,5 +1,18 @@
+kylin-printer (1.0.2) v101; urgency=medium
+
+  * 修改下拉列表处获取ppd文件数最多为3个
+  * getDeviceTypeFromPath内部if结构中加continue
+
+ -- baijincheng <baijincheng@kylinos.cn>  Wed, 13 Jan 2021 10:31:00 +0800
+
+kylin-printer (1.0.1) v101; urgency=medium
+
+  * V1.0上线.
+
+ -- baijincheng <baijincheng@kylinos.cn>  Tue, 12 Jan 2021 17:26:38 +0800
+
 kylin-printer (1.0.1kord) v101; urgency=medium
 
   * Initial release.
 
- -- jiangdingyuan <jiangdingyuan@kylinos.cn>  Thu, 19 Nov 2020 14:39:26 +0800
+ -- jiangdingyuan <jiangdingyuan@kylinos.cn>  Tue, 12 Jan 2021 16:12:38 +0800

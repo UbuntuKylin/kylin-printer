@@ -4,15 +4,15 @@ MatchPPDsThread::MatchPPDsThread(QObject *parent) : QObject(parent)
 {
 }
 
-void MatchPPDsThread::initPPDMatch(QString printerName, myMap data, int type)
+void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, myMap data, int type)
 {
     qDebug() << "In initPPDMatch!";
     originData = data;
-    QStringList printerNameList = printerName.split(' ');
+    QStringList printerNameList = (bandName + ' ' + printerName).split(' ');
     printerBandName = nullptr;
     printerModelName = nullptr;
 
-    printerBandName = printerNameList[0].toLower();
+    printerBandName = bandName.toLower();
     if (!printerBandName.isEmpty())
     {
         for (int i = 1; i < printerNameList.size(); ++i)
@@ -137,6 +137,7 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch2(QString printerM
 
     QMap<int, QStringList> ret;
     ret.clear();
+    int numOfMatchedPPD = 0;
     int size = tempPrinterModel.size();
     for (int i = size ; i > 2; i--)
     {
@@ -191,18 +192,24 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch2(QString printerM
 
                     if (ret.find(i) == ret.end())
                     {
+                        numOfMatchedPPD++;
                         tempMakeAndModel.append(map[keyPPDs].ppdname);
                         ret.insert((i), tempMakeAndModel);
                     }
                     else
                     {
+                        numOfMatchedPPD++;
                         ret[i].append(map[keyPPDs].ppdname);
                     }
+                }
+                if(3 == numOfMatchedPPD)
+                {
+                    break;
                 }
             }
         }
 
-        if (exactMatchFlag)
+        if (exactMatchFlag || (3 == numOfMatchedPPD))
         {
             break;
         }

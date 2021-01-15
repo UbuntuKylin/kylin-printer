@@ -1,5 +1,7 @@
 [Desktop Entry]
-Name=kylin-printer
+Name=Kylin Printer
+Name[zh_CN]=麒麟打印
 Exec=/usr/bin/kylin-printer
+Icon=/usr/share/pixmaps/printer_logo.svg
 Terminal=false
 Type=Application

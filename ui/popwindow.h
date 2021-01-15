@@ -18,15 +18,23 @@
 #include "cupsconnection4ppds.h"
 #include "findppdsthread.h"
 #include "matchppdsthread.h"
+#include "succedfailwindow.h"
+#include "propertywindow.h"
+
 class PopWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     explicit PopWindow(QWidget *parent = nullptr);
 
+    static PopWindow *popMutual;
 private:
     ManualInstallWindow *manual; //手动安装驱动界面
     DeviceInformation printer;
+    SuccedFailWindow *succeed_fail;
+    PropertyWindow *property;
+
+
 
     QWidget *mainWid;           //弹窗主Wid
     QWidget *titleWid;          //标题栏Wid
@@ -76,6 +84,14 @@ private:
     void setPopWindow();                       //设置PopWindow布局
     void loadingPicDisplay();                  //加载图标动态显示
 
+//    QString m_vendor;
+//    QString m_product;
+//    QString m_uri;
+
+    QStringList ppdList;                       //ppd列表
+    bool isExact = false;                      //精准或模糊
+
+    QString m_ppdName;
     ukuiUsbPrinter m_printer;
     myMap mymap;
     bool canFindPPD = false;
@@ -95,22 +111,36 @@ private:
     bool ppdsMapisOK = false;                                  //是否有精准匹配的PPDS
     QMap<QString, QMap<QString, PPDsAndAttr>> originData = {}; //QMap<厂商名，QMap<型号，PPDS属性数据结构>>的原始数据
     /***********************链接CUPS查找PPDS部分用的**************************/
-    
+    QString name;
+
+
 signals:
 
     void monitorDriver(DeviceInformation, bool);
     void printSignal(QStringList); //打印信号携带ppd文件信息
 
     void signalFindPPDsThread();                                   //发送开始连接CUPS链接，查找获取已有的PPDS
-    void signalMatchPPDsThread(QString printername,myMap origin, int devicetype); //获取打印机名字，把CUPS链接传回的PPDS一并输入，进行检索
-    void signalClickManualButton(QString, QString, QString);
+    void signalMatchPPDsThread(QString bandName, QString printername,myMap origin, int devicetype); //获取打印机名字，把CUPS链接传回的PPDS一并输入，进行检索
+    void signalClickManualButton(QString, QString, QString,QStringList ppdList,bool isExact);
+    
+    void matchSuccessSignal(QString printerName,QString position,QStringList ppdList);
+
+    void basicParameter(QString name,QString uri,QString ppdName);//无论模糊精准都要传此基本三个参数
+
+    void printerNameSignal(QString printerName,QString ppdName);
 private slots:
 
     void popDisplay(DeviceInformation, bool); //弹窗显示
-    void print();                             //发送打印测试页
+
     void showManualWindow();                  //显示手动安装
     void gotAllHandledPPDs(myMap);
     void matchResultSlot(resultMap res);
+    void prematchResultSlot();
+
+
+public slots:
+    void print();                             //发送打印测试页
+    void deviceNameSlot();
 };
 
 #endif // POPWINDOW_H

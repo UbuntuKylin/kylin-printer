@@ -1,13 +1,22 @@
 #include "manualinstallwindow.h"
+#include "succedfailwindow.h"
 
 ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent), m_apt(nullptr)
 {
     int WIDTH = 620;
     int HEIGHT = 660;
     this->setFixedSize(WIDTH, HEIGHT);
+
     setWindowTitle(tr("手动安装打印机驱动"));
 
     setAcceptDrops(true);
+
+    installingTimer = new QTimer(this);
+
+    connect(installingTimer,&QTimer::timeout,this,&ManualInstallWindow::displayInstalling);
+
+    SuccedFailWindow *window = new SuccedFailWindow;
+    connect(this,&ManualInstallWindow::manualAddSignal,window,&SuccedFailWindow::onShowSucceedFailWindow);
 
     this->setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
@@ -18,7 +27,9 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
     setManualControls();
     setManualWindow();
 
-    connect(closeBtn, &QPushButton::clicked, this, &ManualInstallWindow::close);
+    connect(closeBtn, &QPushButton::clicked, this, &ManualInstallWindow::hide);
+    connect(cancelBtn,&QPushButton::clicked,this,&ManualInstallWindow::hide);
+
 }
 
 void ManualInstallWindow::dragEnterEvent(QDragEnterEvent *event) //拖进事件
@@ -49,22 +60,52 @@ void ManualInstallWindow::dropEvent(QDropEvent *event) //放下事件
 
     qDebug() << "localpath中的元素个数:" << localpath.count();
     qDebug() << localpath;
+
     if (!localpath.isEmpty())
     {
-        //        emit fromFilemanager(localpath);
-        //        emit addFile(localpath);
+//        QFileInfo fi(localpath.at(0));
+//        if(fi.exists())
+//        {
+//            debCount ++;
+//        }
         if (m_apt == nullptr)
         {
             /* code */
             m_apt = new ukuiApt(localpath.at(0));
             if (m_apt != nullptr)
             {
+
+                installPic->show();
+
                 connect(m_apt, &ukuiApt::reportInstallStatus,
                         this, &ManualInstallWindow::onPackageInstalled);
-                m_apt->install();
+                connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
+                if(m_apt->install())
+                {
+                    installingTimer->start(100);
+
+                }
+                else
+                {
+                    installingTimer->stop();
+                    installPic->hide();
+                    m_apt = nullptr;
+                    disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
+                }
+
+
             }
+
         }
     }
+}
+
+void ManualInstallWindow::displayInstalling()
+{
+    installPic->setIcon(QIcon::fromTheme("ukui-loading-" + QString::number(j % 8)));
+    j%=8;
+    j++;
+
 }
 
 void ManualInstallWindow::initManualControls()
@@ -79,20 +120,29 @@ void ManualInstallWindow::initManualControls()
     dropTipsLabel = new QLabel(this);          //提示"添加一个本地驱动到此"
                                                //    remindUrlLabel  = new QLabel(this);//提醒去Url
     downloadUrlLabel = new QLabel(this);       //下载链接
+    debPic = new QPushButton(this);        //deb包图片
+    debName = new QLabel(this);                //deb包名
+    installPic = new QPushButton(this);   //安装中。。。图标
+    installPic->hide();
 
     //名称行
     Namelb = new QLabel(this);       //名称
-    printName = new QLineEdit(this); //打印机名称
+    printerName = new QLineEdit(this); //打印机名称
     //位置行
     locationlb = new QLabel(this);          //位置
     driverlocalation = new QLineEdit(this); //驱动位置
     //ppd行
     ppdlb = new QLabel(this);  //ppd文件
     ppd = new QLineEdit(this); //ppd文件名
+    dropDownList = new QComboBox(this);//下拉列表
 
     //取消和添加按钮
     cancelBtn = new QPushButton(this);
     addBtn = new QPushButton(this);
+    qDebug()<<"setenable shixiaoshuo";
+    addBtn->setEnabled(true);
+    connect(addBtn,&QPushButton::clicked,this,&ManualInstallWindow::manualAddPrinter);
+    connect(addLocalDriverBtn,&QPushButton::clicked,this,&ManualInstallWindow::addLocalDriverSlot);
 }
 
 void ManualInstallWindow::setManualControls()
@@ -117,25 +167,103 @@ void ManualInstallWindow::setManualControls()
     dropTipsLabel->setText("拖拽一个驱动到此");
     downloadUrlLabel->setFixedSize(300, 36);
     downloadUrlLabel->setText("或者您可以去相关网址下载:www.kylinos.cn");
-    addLocalDriverBtn->setStyleSheet("QPushButton{border-radius:4px;background-color:#3790FA;color:white;border:1px solid rgba(0,0,0,0.15);}"
-                                     "QPushButton::hover{color:black;}");
+    addLocalDriverBtn->setStyleSheet("QPushButton{background-color:#E7E7E7;color:black;}"
+                                     "QPushButton:hover{background-color:#3790FA;color:white;}"
+                                     "QPushButton:pressed{background-color:#4169E1;color:white;}");
+    installPic->setFixedSize(48,48);
+    installPic->setIconSize(QSize(48, 48));
+    installPic->setIcon(QIcon::fromTheme("ukui-loading-" + QString::number(0)));
+    installPic->setStyleSheet("border-radius:24px;");
+
+    debPic ->setFixedSize(30,30);
+    debPic ->setText("Test");
+    debPic ->setStyleSheet("");
+    debName ->setText("test.ppd");
 
     //三行lineEdit
-    Namelb->setText("名称");
-    printName->setFixedSize(442, 36);
-    printName->setText("HP-printer-lasevcP1106");
-    locationlb->setText("位置");
+    Namelb->setText(tr("名称"));
+    printerName->setFixedSize(442, 36);
+    printerName->setText("HP-printer-lasevcP1106");
+    locationlb->setText(tr("位置"));
     driverlocalation->setFixedSize(442, 36);
-    driverlocalation->setText("/user/share/bjc/...");
-    ppdlb->setText("驱动");
+    driverlocalation->setText(tr("办公室"));
+    ppdlb->setText(tr("驱动"));
     ppd->setFixedSize(442, 36);
-    ppd->setText("手动选择驱动方案");
+    ppd->setText(tr("手动选择驱动方案"));
+    dropDownList->setFixedSize(442, 36);
+
 
     //取消和添加按钮
     cancelBtn->setFixedSize(120, 36);
     cancelBtn->setText("取消");
     addBtn->setFixedSize(120, 36);
     addBtn->setText("添加");
+
+
+    addBtn->setStyleSheet("QPushButton{background-color:#E7E7E7;color:black;}"
+                          "QPushButton:hover{background-color:#3790FA;color:white;}"
+                          "QPushButton:pressed{background-color:#4169E1;color:white;}");
+    cancelBtn->setStyleSheet("QPushButton{background-color:#E7E7E7;color:black;}"
+                          "QPushButton:hover{background-color:#3790FA;color:white;}"
+                          "QPushButton:pressed{background-color:#4169E1;color:white;}");
+}
+
+void ManualInstallWindow::addLocalDriverSlot()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+                this,
+                tr("请选择一个deb包"),
+                QDir::currentPath(),
+                "Deb(*.deb)");
+    QFileInfo fileinfo(fileName);
+    QString filesuffix = fileinfo.suffix();
+    if(!fileinfo.isFile()||!filesuffix.contains("deb"))
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("请选择deb包!!!"),QMessageBox::Yes);
+
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+        return ;
+    }
+    if (m_apt == nullptr)
+    {
+        /* code */
+        m_apt = new ukuiApt(fileName);
+        if (m_apt != nullptr)
+        {
+
+            installPic->show();
+
+            connect(m_apt, &ukuiApt::reportInstallStatus,
+                    this, &ManualInstallWindow::onPackageInstalled);
+            if(m_apt->install())
+            {
+                installingTimer->start(100);
+
+            }
+            else
+            {
+                installingTimer->stop();
+                installPic->hide();
+//                m_apt->deleteLater();
+                m_apt = nullptr;
+                disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
+            }
+
+
+        }
+
+    }
+}
+
+void ManualInstallWindow:: alreadyInstallSlot()
+{
+    QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("已经安装过包!"),QMessageBox::Yes);
+
+    msg->button(QMessageBox::Yes)->setText(tr("确认"));
+    msg->exec();
+
+    return ;
 }
 
 void ManualInstallWindow::initManualWindow()
@@ -143,6 +271,7 @@ void ManualInstallWindow::initManualWindow()
     //Wid
     titleWid = new QWidget();     //标题栏Wid
     contentWid = new QWidget();   //内容Wid
+    loadWid = new QWidget();   //debWid
     addDriverWid = new QWidget(); //添加驱动的Wid
     messageWid = new QWidget();   //主要信息显示Wid
     buttomWid = new QWidget();    //底部按钮Wid
@@ -151,6 +280,8 @@ void ManualInstallWindow::initManualWindow()
     //布局
     titleLayout = new QHBoxLayout();     //标题栏布局
     contentLayout = new QVBoxLayout();   //内容布局
+
+    loadLayout = new QHBoxLayout();       //deb布局
     addDriverLayout = new QVBoxLayout(); //添加拖拽布局
     messageLayout = new QVBoxLayout();   //驱动主要信息布局
     buttomLayout = new QHBoxLayout();    //底部按钮布局
@@ -176,17 +307,23 @@ void ManualInstallWindow::setManualWindow()
     titleWid->setLayout(titleLayout);
     titleWid->setFixedHeight(35);
 
+    loadLayout->addWidget(installPic);
+    loadWid->setLayout(loadLayout);
+
     //添加拖拽界面
+    addDriverLayout->addStretch();
     addDriverLayout->addWidget(addLocalDriverBtn, 0, Qt::AlignCenter);
     addDriverLayout->addWidget(dropTipsLabel, 0, Qt::AlignCenter);
     addDriverLayout->addWidget(downloadUrlLabel, 0, Qt::AlignCenter);
+    addDriverLayout->addWidget(loadWid, 0, Qt::AlignCenter);
+    addDriverLayout->addStretch();
     addDriverWid->setLayout(addDriverLayout);
     addDriverWid->setFixedSize(554, 328);
     addDriverWid->setStyleSheet("background-color: #F2F2F2;");
 
     //三行lineedit布局
     printerNameLayout->addWidget(Namelb);
-    printerNameLayout->addWidget(printName);
+    printerNameLayout->addWidget(printerName);
     printerNameWid->setLayout(printerNameLayout);
     printerNameWid->setFixedSize(554, 50);
     printerNameWid->setStyleSheet("background-color: #F2F2F2;");
@@ -198,12 +335,13 @@ void ManualInstallWindow::setManualWindow()
     locationWid->setStyleSheet("background-color: #F2F2F2;");
 
     pddFileLayout->addWidget(ppdlb);
-    pddFileLayout->addWidget(ppd);
+//    pddFileLayout->addWidget(ppd);
+    pddFileLayout->addWidget(dropDownList);
     pddFileWid->setLayout(pddFileLayout);
     pddFileWid->setFixedSize(554, 50);
     pddFileWid->setStyleSheet("background-color: #F2F2F2;");
 
-    printName->setReadOnly(false);
+    printerName->setReadOnly(false);
     driverlocalation->setReadOnly(false);
     ppd->setReadOnly(true);
     //驱动主要信息布局
@@ -216,6 +354,7 @@ void ManualInstallWindow::setManualWindow()
     buttomLayout->addWidget(cancelBtn);
     buttomLayout->addWidget(addBtn);
     buttomWid->setLayout(buttomLayout);
+//    buttomWid->setStyleSheet("background-color:pink;");
 
     //内容布局
     contentLayout->addWidget(addDriverWid, 0, Qt::AlignCenter);
@@ -225,6 +364,7 @@ void ManualInstallWindow::setManualWindow()
 
     mainLayout->addWidget(titleWid);
     mainLayout->addWidget(contentWid);
+    mainLayout->setMargin(0);
     mainWid->setLayout(mainLayout);
     mainWid->setStyleSheet("background-color:#FFFFFF;");
 
@@ -238,18 +378,91 @@ void ManualInstallWindow::setManualWindow()
     qDebug() << "mainWid";
 }
 
-void ManualInstallWindow::onShowManualWindow(QString vendor, QString product, QString uri)
+void ManualInstallWindow::onShowManualWindow(QString vendor, QString product, QString uri,QStringList ppdList, bool isExact)
 {
     m_vendor = vendor;
     m_product = product;
     m_uri = uri;
-    qDebug() << "Vendor:" << m_vendor;
-    qDebug() << "Product" << m_product;
-    qDebug() << "Uri:" << m_uri;
+    m_ppdList = ppdList;
+    m_isExact = isExact;
+    qDebug() << "Vendor:"   << m_vendor;
+    qDebug() << "Product"   << m_product;
+    qDebug() << "Uri:"      << m_uri;
+    qDebug() << "isExact??" << m_isExact ;
+    printerName->setText(m_vendor + "+" + m_product);
+//    dropDownList->addItems(m_ppdList);
     show();
+//    emit manualAddSignal(m_vendor + " " + m_product,false);
 }
 void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
 {
     qDebug()<<"onPackageInstalled"<<(int)status;
-    emit updatePpdList();
+    if((int)status)
+    {
+        //安装deb成功后需要在list刷新
+        emit updatePpdList();
+//        emit matchPpdList();
+        debSuccess = true;
+        dropDownList->addItem("2");
+
+
+    }
+    else
+    {
+        //安装失败
+    }
+
+}
+
+void ManualInstallWindow::matchSuccessSlot(QString printerName,QString position,QStringList ppdList)
+{
+
+    //找了再次更新三行信息
+    matchTag++;
+    qDebug()<<"匹配"<<matchTag<<"次!!!!!";
+
+    installingTimer->stop();
+    installPic->hide();
+    m_apt->deleteLater();
+    m_apt = nullptr;
+    disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
+    if(debSuccess&&matchTag>1)
+    {
+        addBtn->setEnabled(true);
+
+    }
+
+    dropDownList->clear();
+
+    this->printerName->setText(printerName);
+    driverlocalation->setText(position);
+    dropDownList->addItems(ppdList);
+}
+
+
+void ManualInstallWindow::manualAddPrinter()
+{
+    qDebug()<<"正在安装打印机驱动...";
+//    emit manualAddSignal(m_vendor + " " + m_product,bool isSuccess);
+
+    m_printer.name = printerName->text().toStdString();
+    m_printer.uri = m_uri.toStdString();
+    m_printer.ppdName = dropDownList->currentText().toStdString();
+    qDebug()<<m_printer.name.c_str()<<" "<<m_printer.uri.c_str()<<" "<<m_printer.ppdName.c_str();
+    bool isManualInstallSuccess = ukuiPrinter::getInstance().addPrinter(
+                m_printer.uri,
+                m_printer.name,
+                m_printer.ppdName,
+                "");
+
+    if(isManualInstallSuccess == true)
+    {
+        emit manualAddSignal(printerName->text(),isManualInstallSuccess);
+
+    }
+    else
+    {
+        emit manualAddSignal(printerName->text(),isManualInstallSuccess);
+    }
+
 }
