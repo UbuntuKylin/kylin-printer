@@ -23,6 +23,7 @@
 #include <QThread>
 #include <QObject>
 #include <QMetaType>
+#include <QUrl>
 #include "deviceMonitor.h"
 
 #define UEVENT_BUFFER_SIZE 2048
@@ -278,8 +279,8 @@ bool DeviceMonitor::usbDeivceAdd(const QString &qstr)
     newDevice.serial       = getRetFromCommand(QStringList{"cat", path + "/serial"});
 
     // direct usb://Cumtenn/CTP-2200N?serial=0123
-    newDevice.uri = getRetFromCommand(QStringList{"lpinfo", "-v", "|" , "grep", "usb://"}).remove("direct ");
-    // newDevice.uri = "usb://Cumtenn/CTP-2200N?serial=0123";
+    newDevice.uri = QUrl(getRetFromCommand(QStringList{"lpinfo", "-v", "|" , "grep", "usb://"}).remove("direct ")).toString();
+    // newDevice.uri = "usb://Cumtenn/CTP-2200N series?serial=0123";
     if (!newDevice.uri.contains("usb")) {
         newDevice.uri.clear();
     }
@@ -288,9 +289,11 @@ bool DeviceMonitor::usbDeivceAdd(const QString &qstr)
         tempUri.remove("usb://");
         newDevice.vendor = tempUri.left(tempUri.indexOf("/"));
         tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
-        newDevice.model = tempUri.left(tempUri.indexOf("?"));
+
+        //TODO: model带空格 只取第一个
+        newDevice.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
         tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
-        tempUri.remove("serial=");
+        tempUri.remove("serial=");                
         newDevice.serial = tempUri;
     }
     this->m_mpDeviceInformationMap.insert(path, newDevice);
