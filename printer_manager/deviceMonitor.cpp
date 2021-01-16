@@ -24,6 +24,19 @@
 #include <QObject>
 #include <QMetaType>
 #include <QUrl>
+#include <QSysInfo>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
+#include <QEventLoop>
+
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+
 #include "deviceMonitor.h"
 
 #define UEVENT_BUFFER_SIZE 2048
@@ -146,6 +159,90 @@ DeviceInformation::DeviceInformation(const QString &qstr)
     }
 }
 
+QString getPackageNameFromHttp(const DeviceInformation &device)
+{
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+        #define __SYSTEM_VERSION__ "V10Professional"
+    #else
+        #define __SYSTEM_VERSION__ "V10"
+    #endif
+
+    QString arch = QSysInfo::currentCpuArchitecture();
+    if (arch.contains("86")) {
+        arch = "amd64";
+    }
+    else if (arch.contains("arm")) {
+        arch = "arm64";
+    }
+    else if (arch.contains("mips")) {
+        arch = "mips64el";
+    }
+    // https://api.kylinos.cn/api/v1/getprinterdrive?
+    // systemVersion=V10
+    // &framework=arm64
+    // &pid=00a5
+    // &vid=04f9
+    // &product=Brother
+    // &model=HL-3190CDW
+    QString httpRequest = QString ( QString("https://api.kylinos.cn/api/v1/getprinterdrive")
+                                  + "?" + QString("systemVersion=") + QString(__SYSTEM_VERSION__)
+                                  + "&" + QString("framework=")     + arch
+                                  + "&" + QString("pid=")           + device.PID
+                                  + "&" + QString("vid=")           + device.VID
+                                  + "&" + QString("product=")       + device.vendor
+                                  + "&" + QString("model=")         + device.model
+                                  );
+    QNetworkAccessManager manager;
+    QNetworkRequest netRequest;
+    QNetworkReply *netReply;
+    QEventLoop loop;
+
+    httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10&framework=arm64&pid=00a5&vid=04f9&product=Brother&model=HL-3190CDW";
+    netRequest.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+    netRequest.setUrl(QUrl(httpRequest));
+    netReply = manager.get(netRequest);
+
+    QObject::connect(netReply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    if (netReply->error() != QNetworkReply::NoError) {
+        return "";
+    }
+
+    QByteArray strRateAll = netReply->readAll();
+    qDebug() << strRateAll;
+    if (strRateAll == "") {
+        return "";
+    }
+    QJsonParseError jsonParserError;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(strRateAll, &jsonParserError );
+
+    if ( jsonDocument.isNull() || jsonParserError.error != QJsonParseError::NoError ) {
+        qDebug () << "json解析失败";
+        return "";
+    }
+    else {
+        qDebug() << "json解析成功!";
+    }
+    QStringList ans;
+    if (jsonDocument.isObject()) {
+        QJsonObject jsonObject = jsonDocument.object();
+        if ( jsonObject.contains("data")
+            && jsonObject.value("data").isArray() ) {
+
+            QJsonArray jsonArray = jsonObject.value("data").toArray();
+            for ( int i = 0; i < jsonArray.size(); i++) {
+                if (jsonArray.at(i).isString()) {
+                    ans.append(jsonArray.at(i).toString());
+                }
+            }
+        }
+    }
+    // qDebug()<< ans;
+    
+    return ans.join(",");
+}
+
 QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
 {
     debug.noquote();
@@ -162,6 +259,7 @@ QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
                             + QString("model        is: ") + debugInfo.model        + QString("\n")
                             + QString("serial       is: ") + debugInfo.serial       + QString("\n")
                             + QString("uri          is: ") + debugInfo.uri          + QString("\n")
+                            + QString("packageName  is: ") + debugInfo.packageName  + QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
                             );
     debug << info;

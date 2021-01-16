@@ -7,13 +7,14 @@
 #include <QThread>
 #include <QDebug>
 
-class DeviceInformation {
-
+class DeviceInformation
+{
 public:
     QString sysPath;    // sys下的目录
     QString devicePath; // dev下的目录 绝对路径
     QString deviceType; // 设备种类 打印机为07
-    QString busNumber;
+    QString busNumber; 
+    
     QString deviceNumber;
     QString VID;       // usb vid
     QString PID;       // usb pid
@@ -21,9 +22,12 @@ public:
     QString model;     // 型号
     QString serial;    // 序列号
     QString uri;        // 设备uri
+    QString packageName;    // 包名
     DeviceInformation();
     DeviceInformation(const QString &);
 
+    friend QString getPackageNameFromHttp(const DeviceInformation &);
+    // static QString getPackageNameFromHttp(const QString &);
     // qdebug 重定向
     friend QDebug operator << (QDebug debug, const DeviceInformation &);
 };
