@@ -18,7 +18,8 @@ SuccedFailWindow::SuccedFailWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(closeBtn,&QToolButton::clicked,this,&SuccedFailWindow::hide);
     connect(printTestBtn,&QPushButton::clicked,this,&SuccedFailWindow::printSlot);
-    connect(viewDeviceBtn,&QPushButton::clicked,PopWindow::popMutual,&PopWindow::deviceNameSlot);
+    connect(viewDeviceBtn,&QPushButton::clicked,PopWindow::popMutual,&PopWindow::deviceNameSlot);//显示打印机属性界面
+    connect(viewDeviceBtn,&QPushButton::clicked,this,&SuccedFailWindow::hide);//隐藏此弹窗
 
 
 }
@@ -102,18 +103,34 @@ void SuccedFailWindow::setWindow()
 
 void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
 {
+    if(printer =="")
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机名称不可为空!"),QMessageBox::Yes);
+
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+        this->hide();
+        return ;
+    }
     if(isSuccess)
     {
+
+        qDebug()<<"打印机"<<printer;
         printerName->setText("打印机"+printer+"安装成功!");
         picBtn->setIcon(QIcon::fromTheme("ukui-dialog-success"));
 
         printerDeviceName = printer;
+        printTestBtn->show();
+
+
+
 
     }
     else
     {
         printerName->setText("打印机"+printer+"安装失败!");
         picBtn->setIcon(QIcon::fromTheme("dialog-error"));
+        printTestBtn->hide();
     }
 
     show();

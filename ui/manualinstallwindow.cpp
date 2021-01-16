@@ -58,16 +58,21 @@ void ManualInstallWindow::dropEvent(QDropEvent *event) //放下事件
         localpath << url.toLocalFile();
     }
 
-    qDebug() << "localpath中的元素个数:" << localpath.count();
-    qDebug() << localpath;
+    qDebug() << "localpath:" << localpath;//如果他拖拽了一堆则默认选择第0个元素
+    QFileInfo fileinfo(localpath.at(0));
+    QString fileSuffix = fileinfo.suffix();
+    if(fileSuffix != "deb")
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("请选择deb包!!!"),QMessageBox::Yes);
+
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+        return ;
+    }
 
     if (!localpath.isEmpty())
     {
-//        QFileInfo fi(localpath.at(0));
-//        if(fi.exists())
-//        {
-//            debCount ++;
-//        }
+
         if (m_apt == nullptr)
         {
             /* code */
@@ -208,7 +213,7 @@ void ManualInstallWindow::setManualControls()
                           "QPushButton:pressed{background-color:#4169E1;color:white;}");
 }
 
-void ManualInstallWindow::addLocalDriverSlot()
+void ManualInstallWindow::addLocalDriverSlot()//系统弹窗的选择deb包
 {
     QString fileName = QFileDialog::getOpenFileName(
                 this,
