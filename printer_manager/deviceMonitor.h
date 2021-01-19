@@ -57,7 +57,8 @@ public:
     // 设置是否需要只需要打印机 默认为true
     // 如果修改为false 则会识别所有接入的usb设备
     bool setFindPrinterOnly;
-
+    static QString getAllPrinterWithPDD();
+    static QString getAllPrinterConnected();
 public:
     static DeviceMonitor *getInstance();
     ~DeviceMonitor();

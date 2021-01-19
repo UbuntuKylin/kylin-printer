@@ -14,6 +14,8 @@
 
 #include <sys/inotify.h>
 
+#include <cups/cups.h>
+
 #include <QDebug>
 #include <QString>
 #include <QProcess>
@@ -197,7 +199,7 @@ QString getPackageNameFromHttp(const DeviceInformation &device)
     QNetworkReply *netReply;
     QEventLoop loop;
 
-    httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10&framework=arm64&pid=00a5&vid=04f9&product=Brother&model=HL-3190CDW";
+    // httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10&framework=arm64&pid=00a5&vid=04f9&product=Brother&model=HL-3190CDW";
     netRequest.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
     netRequest.setUrl(QUrl(httpRequest));
     netReply = manager.get(netRequest);
@@ -438,4 +440,31 @@ void DeviceMonitor::sendTestSignals()
     }
 
     flag = ~flag;
+}
+
+QString DeviceMonitor::getAllPrinterWithPDD()
+{
+    QStringList res;
+    int i;
+    cups_dest_t *dests, *dest;
+    int num_dests = cupsGetDests(&dests);
+    for (i = num_dests, dest = dests; i > 0; i --, dest ++)
+    {
+        if (dest->num_options) {
+            QString value = cupsGetOption("device-uri", dest->num_options, dest->options);
+            if (value.size()) {
+                res.append(value);
+            }
+        }
+    }
+    return res.join(",");
+}
+
+QString DeviceMonitor::getAllPrinterConnected()
+{   
+    QStringList res;
+    res.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'", "-e", "\'ipp://\'"})
+                .remove("direct ").remove("network ").split("\n") 
+              );
+    return res.join(",");
 }
