@@ -473,6 +473,7 @@ cups_dest_t *getDestWithURI(const char *uri)
             }
         }
     }
+    cupsFreeDests(num_dests, dests);
     return NULL;
 }
 
@@ -538,6 +539,7 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterWithPDD(const bool usbConne
             }
         }
     }
+    cupsFreeDests(num_dests, dests);
     return res;
 }
 
