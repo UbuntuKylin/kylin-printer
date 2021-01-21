@@ -3,7 +3,7 @@ kylin-printer (1.0.4) v101; urgency=medium
   * 修改流程，未安装的厂商类的打印机，找generic类的驱动
   * 去掉冗余的打印信息
 
- -- hanzehui <hanzehui@kylinos.cn>  Wed, 21 Jan 2021 10:31:00 +0800
+ -- hanzehui <hanzehui@kylinos.cn>  Wed, 21 Jan 2021 16:31:00 +0800
 
 kylin-printer (1.0.3) v101; urgency=medium
 
