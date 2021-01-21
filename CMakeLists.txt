@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Network REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Network REQUIRED)
 
 #add include 
 include_directories(${PROJECT_SOURCE_DIR}/printer_manager/)
@@ -36,7 +36,7 @@ add_executable(kylin-printer
     ${ui_RESOURCE}
 )
 
-target_link_libraries(kylin-printer Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(kylin-printer Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 #dependencies
 target_link_libraries(kylin-printer "-lpthread -lz")
 #cups

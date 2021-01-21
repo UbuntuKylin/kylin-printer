@@ -14,6 +14,8 @@
 
 #include <sys/inotify.h>
 
+#include <cups/cups.h>
+
 #include <QDebug>
 #include <QString>
 #include <QProcess>
@@ -24,6 +26,19 @@
 #include <QObject>
 #include <QMetaType>
 #include <QUrl>
+#include <QSysInfo>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkReply>
+#include <QEventLoop>
+
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QJsonValue>
+#include <QJsonObject>
+#include <QJsonArray>
+
 #include "deviceMonitor.h"
 
 #define UEVENT_BUFFER_SIZE 2048
@@ -146,11 +161,95 @@ DeviceInformation::DeviceInformation(const QString &qstr)
     }
 }
 
+QStringList getPackagesNameFromHttp(DeviceInformation &device)
+{
+    QStringList res;
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+        #define __SYSTEM_VERSION__ "V10Professional"
+    #else
+        #define __SYSTEM_VERSION__ "V10"
+    #endif
+
+    QString arch = QSysInfo::currentCpuArchitecture();
+    if (arch.contains("86")) {
+        arch = "amd64";
+    }
+    else if (arch.contains("arm")) {
+        arch = "arm64";
+    }
+    else if (arch.contains("mips")) {
+        arch = "mips64el";
+    }
+    // https://api.kylinos.cn/api/v1/getprinterdrive?
+    // systemVersion=V10
+    // &framework=arm64
+    // &pid=00a5
+    // &vid=04f9
+    // &product=Brother
+    // &model=HL-3190CDW
+    QString httpRequest = QString ( QString("https://api.kylinos.cn/api/v1/getprinterdrive")
+                                  + "?" + QString("systemVersion=") + QString(__SYSTEM_VERSION__)
+                                  + "&" + QString("arch=")          + arch
+                                  + "&" + QString("pid=")           + device.PID
+                                  + "&" + QString("vid=")           + device.VID
+                                  + "&" + QString("manufacter=")    + device.vendor
+                                  + "&" + QString("model=")         + device.model
+                                  );
+    QNetworkAccessManager manager;
+    QNetworkRequest netRequest;
+    QNetworkReply *netReply;
+    QEventLoop loop;
+
+    // httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10Professional&arch=amd64&manufacter=cumtenn";
+    netRequest.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
+    netRequest.setUrl(QUrl(httpRequest));
+    netReply = manager.get(netRequest);
+
+    QObject::connect(netReply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    if (netReply->error() != QNetworkReply::NoError) {
+        return res;
+    }
+
+    QByteArray strRateAll = netReply->readAll();
+    qDebug() << strRateAll;
+    if (strRateAll == "") {
+        return res;
+    }
+    QJsonParseError jsonParserError;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(strRateAll, &jsonParserError );
+
+    if ( jsonDocument.isNull() || jsonParserError.error != QJsonParseError::NoError ) {
+        qDebug () << "json解析失败";
+        return res;
+    }
+    else {
+        qDebug() << "json解析成功!";
+    }
+    if (jsonDocument.isObject()) {
+        QJsonObject jsonObject = jsonDocument.object();
+        if ( jsonObject.contains("data")
+            && jsonObject.value("data").isArray() ) {
+
+            QJsonArray jsonArray = jsonObject.value("data").toArray();
+            for ( int i = 0; i < jsonArray.size(); i++) {
+                if (jsonArray.at(i).isString()) {
+                    res.append(jsonArray.at(i).toString());
+                }
+            }
+        }
+    }
+    device.packagesName = res;
+    return res;
+}
+
 QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
 {
     debug.noquote();
     QString info = QString  ( QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
+                            + QString("name         is: ") + debugInfo.name      + QString('\n')
                             + QString("sysPath      is: ") + debugInfo.sysPath      + QString('\n')
                             + QString("devicePath   is: ") + debugInfo.devicePath   + QString("\n")
                             + QString("deviceType   is: ") + debugInfo.deviceType   + QString("\n")
@@ -162,6 +261,8 @@ QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
                             + QString("model        is: ") + debugInfo.model        + QString("\n")
                             + QString("serial       is: ") + debugInfo.serial       + QString("\n")
                             + QString("uri          is: ") + debugInfo.uri          + QString("\n")
+                            + QString("packageName  is: ") + debugInfo.packagesName.join(",") + QString("\n")
+                            + QString("makeAndModel is: ") + debugInfo.makeAndModel + QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
                             );
     debug << info;
@@ -315,8 +416,6 @@ bool DeviceMonitor::usbDeivceRemove(const QString &qstr)
     return true;
 }
 
-
-
 // 调试模式
 void DeviceMonitor::setTestModelEnabled()
 {
@@ -340,4 +439,132 @@ void DeviceMonitor::sendTestSignals()
     }
 
     flag = ~flag;
+}
+
+
+
+
+
+QString getUriHead(const QString &uri)
+{
+    if (!uri.size())
+        return "";
+    QString head = uri.left(uri.indexOf(":"));
+    if (head.size())
+        return head;
+    return "";
+}
+
+cups_dest_t *getDestWithURI(const char *uri)
+{
+    qDebug() << "im in getDestWithURI";
+    qDebug() << uri;
+    int i;
+    cups_dest_t *dests, *dest;
+    const char *value;
+    int num_dests = cupsGetDests(&dests);
+
+    for (i = num_dests, dest = dests; i > 0; i --, dest ++) {
+        if (dest->num_options) {
+            value = cupsGetOption("device-uri", dest->num_options, dest->options);
+            if ( value != NULL && strcmp(uri, value) == 0) {
+                return dest;
+            }
+        }
+    }
+    cupsFreeDests(num_dests, dests);
+    return NULL;
+}
+
+DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
+{
+    DeviceInformation deviceInfo;
+    if (dest->name != NULL)
+        deviceInfo.name = dest->name;
+    if (dest->num_options) {
+        deviceInfo.makeAndModel = cupsGetOption("printer-make-and-model", dest->num_options, dest->options);
+        deviceInfo.uri = cupsGetOption("device-uri", dest->num_options, dest->options);
+    }
+    QString tempUri = deviceInfo.uri;
+    if (tempUri.contains("ipp") && tempUri.contains("%20")) {
+        tempUri.replace(tempUri.indexOf("%20"),3, "/");
+        // tempUri[tempUri.indexOf("%20")] = "/";
+    }
+    tempUri = QUrl(tempUri).toString();
+    QString head = getUriHead(tempUri);
+
+    if (head == "usb") {
+        tempUri.remove("usb://");
+        deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+        tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
+
+        //TODO: model带空格 只取第一个
+        deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+        tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
+        tempUri.remove("serial=");
+        if (tempUri.contains("&"))
+            deviceInfo.serial = tempUri.left(tempUri.indexOf("&"));
+        else
+            deviceInfo.serial = tempUri;
+    }
+    else if (head == "ipp" || head == "ipps") {
+        tempUri.remove("ipp://");
+        deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+        tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
+        tempUri = tempUri.left(tempUri.indexOf("."));
+        deviceInfo.model = tempUri.split(" ").at(0);
+    }
+    return deviceInfo;
+}
+
+QList<DeviceInformation> DeviceMonitor::getAllPrinterWithPDD(const bool usbConnectOnly)
+{
+    QList<DeviceInformation> res;
+    int i;
+    cups_dest_t *dests, *dest;
+    int num_dests = cupsGetDests(&dests);
+    qDebug() << num_dests;
+    for (i = num_dests, dest = dests; i > 0; i --, dest ++)
+    {
+        if (dest->num_options) {
+            QString uri = cupsGetOption("device-uri", dest->num_options, dest->options);
+            if (usbConnectOnly == true && !uri.contains("usb://")) {
+                continue;
+            }
+            QString value = cupsGetOption("printer-make-and-model", dest->num_options, dest->options);
+            if (value.size() && value != "Remote Printer") {
+                DeviceInformation device = getDeviceInformationFromDest(dest);
+                res.append(device);
+            }
+        }
+    }
+    cupsFreeDests(num_dests, dests);
+    return res;
+}
+
+
+QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
+{   
+    QList<DeviceInformation> res;
+    QStringList uriList;
+    uriList.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'", "-e", "\'ipp://\'"})
+                    .remove("direct ")
+                    .remove("network ")
+                    .split("\n") 
+                  );
+
+    for (int i = 0; i < uriList.size(); i++) {
+        // qDebug () << i;
+        // printf("%s\n",uriList.at(i).toStdString().c_str());
+        // qDebug() << uriList.at(i).toStdString().c_str();
+        cups_dest_t *dest = getDestWithURI(uriList.at(i).toStdString().c_str());
+
+        if (dest == NULL) {
+            qDebug() << i << "is not find";
+            continue;
+        }
+        DeviceInformation device = getDeviceInformationFromDest(dest);
+        res.append(device);
+    }
+    return res;
 }
