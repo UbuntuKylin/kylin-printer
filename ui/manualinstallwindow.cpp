@@ -58,16 +58,21 @@ void ManualInstallWindow::dropEvent(QDropEvent *event) //放下事件
         localpath << url.toLocalFile();
     }
 
-    qDebug() << "localpath中的元素个数:" << localpath.count();
-    qDebug() << localpath;
+    qDebug() << "localpath:" << localpath;//如果他拖拽了一堆则默认选择第0个元素
+    QFileInfo fileinfo(localpath.at(0));
+    QString fileSuffix = fileinfo.suffix();
+    if(fileSuffix != "deb")
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("请选择deb包!!!"),QMessageBox::Yes);
+
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+        return ;
+    }
 
     if (!localpath.isEmpty())
     {
-//        QFileInfo fi(localpath.at(0));
-//        if(fi.exists())
-//        {
-//            debCount ++;
-//        }
+
         if (m_apt == nullptr)
         {
             /* code */
@@ -156,9 +161,9 @@ void ManualInstallWindow::setManualControls()
     titleLabel->setText(tr("手动安装打印机驱动"));
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
     closeBtn->setFixedSize(24, 24);
-    closeBtn->setStyleSheet("QPushButton{border-radius:4px;}"
-                            "QPushButton:hover{background-color:#F86457;}"
-                            "QPushButton:pressed{background-color:#E44C50;}");
+    closeBtn->setProperty("isWindowButton", 0x2);
+    closeBtn->setProperty("useIconHighlightEffect", 0x8);
+    closeBtn->setFlat(true);
 
     //添加处控件
     addLocalDriverBtn->setFixedSize(120, 36);
@@ -166,7 +171,10 @@ void ManualInstallWindow::setManualControls()
     dropTipsLabel->setFixedSize(120, 36);
     dropTipsLabel->setText("拖拽一个驱动到此");
     downloadUrlLabel->setFixedSize(300, 36);
-    downloadUrlLabel->setText("或者您可以去相关网址下载:www.kylinos.cn");
+
+    downloadUrlLabel->setText(tr("或者您可以去相关网址下载:")+"<a href = http://www.baidu.com>www.baidu.com</a>");
+    downloadUrlLabel->setOpenExternalLinks(true);
+
     addLocalDriverBtn->setStyleSheet("QPushButton{background-color:#E7E7E7;color:black;}"
                                      "QPushButton:hover{background-color:#3790FA;color:white;}"
                                      "QPushButton:pressed{background-color:#4169E1;color:white;}");
@@ -208,7 +216,7 @@ void ManualInstallWindow::setManualControls()
                           "QPushButton:pressed{background-color:#4169E1;color:white;}");
 }
 
-void ManualInstallWindow::addLocalDriverSlot()
+void ManualInstallWindow::addLocalDriverSlot()//系统弹窗的选择deb包
 {
     QString fileName = QFileDialog::getOpenFileName(
                 this,
@@ -366,10 +374,9 @@ void ManualInstallWindow::setManualWindow()
     mainLayout->addWidget(contentWid);
     mainLayout->setMargin(0);
     mainWid->setLayout(mainLayout);
-    mainWid->setStyleSheet("background-color:#FFFFFF;");
 
     mainWid->setObjectName("mainWid");
-    mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);background-color:#FFFFFF;}"); //主窗体圆角
+    mainWid->setStyleSheet("#mainWid{background-color:#FFFFFF;}"); //主窗体圆角
 
     this->setWindowFlags(Qt::FramelessWindowHint);    //设置窗体无边框**加窗管协议后要将此注释调**
     this->setAttribute(Qt::WA_TranslucentBackground); //窗体透明

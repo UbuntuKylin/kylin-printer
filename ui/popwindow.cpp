@@ -182,7 +182,7 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     picButton->setStyleSheet("border-radius:4px;");
     isMonitorEdit->setFixedSize(300, 25);
     isMonitorEdit->setFocusPolicy(Qt::NoFocus);
-    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + "+" + printerDevice.model);
+    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + " " + printerDevice.model);
     isMonitorEdit->setStyleSheet("background-color:pink;/*QLineEdit{border:1px solid rgba(255,0,0,0.5);}*/");
     isMonitorEdit->setStyleSheet("font:14px;");
 
@@ -324,13 +324,16 @@ void PopWindow::matchResultSlot(resultMap res)
     }
 
     //更新manual三行信息
-    emit matchSuccessSignal(printer.vendor+" "+printer.model,"Office",ppdList);
+    emit matchSuccessSignal(printer.vendor+"+"+printer.model,"Office",ppdList);//必须带"+"
 
 }
 
 //气泡弹窗显示
 void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
+    static int i=0;
+    i++;
+    qDebug()<<"JJJJJJJJJJJJJJ"<<i;
     name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();
@@ -383,6 +386,10 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
         qDebug() << i;
         timer->stop();
         this->hide();
+        succeed_fail->hide();//成功或失败界面消失
+        manual->hide(); //手动安装驱动界面消失
+
+//        property->hide();//打印机属性界面消失
     }
 }
 
@@ -448,7 +455,7 @@ void PopWindow::print()
 void PopWindow::showManualWindow()
 {
 
-    //    manual->show();
+    this->hide();
     emit this->signalClickManualButton(m_printer.vendor.c_str(), m_printer.prodect.c_str(), m_printer.uri.c_str(), ppdList, isExact);
 }
 
@@ -461,15 +468,16 @@ void PopWindow::prematchResultSlot()
     temp.append(" ");
     temp.append(m_printer.prodect.c_str());
 
-
     QTimer::singleShot(10000, [=]() {
         signalMatchPPDsThread(m_printer.vendor.c_str(),m_printer.prodect.c_str(), mymap, USB);
     });
-
 
 }
 
 void PopWindow::deviceNameSlot()
 {
-    emit printerNameSignal(name,m_printer.ppdName.c_str());
+
+    qDebug()<<"打印机名称:"<<manual->printerName->text().replace("+"," ");
+
+    emit printerNameSignal(manual->printerName->text().replace("+"," "),m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
 }

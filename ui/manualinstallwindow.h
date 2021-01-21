@@ -35,6 +35,8 @@ public:
     QPushButton *addBtn;//添加
     int debCount = 0;
 
+    QLabel *Namelb;//名称
+    QLineEdit *printerName;//打印机名称
 private:
 
 
@@ -76,8 +78,9 @@ private:
     QPushButton *installPic;   //安装中。。。图标
     int j= 0;
 
-    QLabel *Namelb;//名称
-    QLineEdit *printerName;//打印机名称
+
+    //打印机名称在public中
+
     QLabel *locationlb;//位置
     QLineEdit *driverlocalation;//驱动位置
     QLabel *ppdlb;//pdd文件
