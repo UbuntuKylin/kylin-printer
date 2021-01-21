@@ -324,13 +324,16 @@ void PopWindow::matchResultSlot(resultMap res)
     }
 
     //更新manual三行信息
-    emit matchSuccessSignal(printer.vendor+" "+printer.model,"Office",ppdList);
+    emit matchSuccessSignal(printer.vendor+"+"+printer.model,"Office",ppdList);//必须带"+"
 
 }
 
 //气泡弹窗显示
 void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
+    static int i=0;
+    i++;
+    qDebug()<<"JJJJJJJJJJJJJJ"<<i;
     name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();

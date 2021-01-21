@@ -161,9 +161,9 @@ void ManualInstallWindow::setManualControls()
     titleLabel->setText(tr("手动安装打印机驱动"));
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
     closeBtn->setFixedSize(24, 24);
-    closeBtn->setStyleSheet("QPushButton{border-radius:4px;}"
-                            "QPushButton:hover{background-color:#F86457;}"
-                            "QPushButton:pressed{background-color:#E44C50;}");
+    closeBtn->setProperty("isWindowButton", 0x2);
+    closeBtn->setProperty("useIconHighlightEffect", 0x8);
+    closeBtn->setFlat(true);
 
     //添加处控件
     addLocalDriverBtn->setFixedSize(120, 36);
@@ -171,7 +171,10 @@ void ManualInstallWindow::setManualControls()
     dropTipsLabel->setFixedSize(120, 36);
     dropTipsLabel->setText("拖拽一个驱动到此");
     downloadUrlLabel->setFixedSize(300, 36);
-    downloadUrlLabel->setText("或者您可以去相关网址下载:www.kylinos.cn");
+
+    downloadUrlLabel->setText(tr("或者您可以去相关网址下载:")+"<a href = http://www.baidu.com>www.baidu.com</a>");
+    downloadUrlLabel->setOpenExternalLinks(true);
+
     addLocalDriverBtn->setStyleSheet("QPushButton{background-color:#E7E7E7;color:black;}"
                                      "QPushButton:hover{background-color:#3790FA;color:white;}"
                                      "QPushButton:pressed{background-color:#4169E1;color:white;}");
@@ -371,10 +374,9 @@ void ManualInstallWindow::setManualWindow()
     mainLayout->addWidget(contentWid);
     mainLayout->setMargin(0);
     mainWid->setLayout(mainLayout);
-    mainWid->setStyleSheet("background-color:#FFFFFF;");
 
     mainWid->setObjectName("mainWid");
-    mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);background-color:#FFFFFF;}"); //主窗体圆角
+    mainWid->setStyleSheet("#mainWid{background-color:#FFFFFF;}"); //主窗体圆角
 
     this->setWindowFlags(Qt::FramelessWindowHint);    //设置窗体无边框**加窗管协议后要将此注释调**
     this->setAttribute(Qt::WA_TranslucentBackground); //窗体透明

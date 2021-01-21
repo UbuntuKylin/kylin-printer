@@ -56,7 +56,6 @@ void PropertyWindow::setWindow()
     titleLabel->setFixedSize(80,20);
     titleLabel->setText(tr("打印机属性"));
     closeBtn->setFixedSize(30,30);
-    closeBtn->setIconSize(QSize(30,30));
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
     closeBtn->setProperty("isWindowButton", 0x2);
     closeBtn->setProperty("useIconHighlightEffect", 0x8);
