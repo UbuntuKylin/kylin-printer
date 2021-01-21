@@ -1,11 +1,7 @@
 #include <QDebug>
 #include <QFileInfo>
+#include <QtDBus>
 #include "ukuiApt.h"
-
-
-static void dgbPrintPackage(QApt::DebFile *debFile)
-{
-}
 
 bool ukuiApt::initial()
 {
@@ -175,4 +171,28 @@ void ukuiApt::onFinished(QApt::ExitStatus exitStatus)
 {
     qDebug() << "onFinished";
     emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_SUCCESS);
+}
+
+void PrinterUtility::installPackage(QString packageName)
+{
+    qDebug() << "Package:" << packageName;
+    qDebug() << "installPackage 1:";
+    QDBusConnection bus = QDBusConnection::systemBus();
+    QDBusInterface dbus_iface("cn.kylinos.KylinUpdateManager", "/cn/kylinos/KylinUpdateManager",
+                              "cn.kylinos.KylinUpdateManager", bus);
+
+    qDebug() << dbus_iface.call("install_and_upgrade", packageName);
+    //dbus_iface.call("exit");
+}
+
+void PrinterUtility::installLocalDeb(QString debFilePath)
+{
+    qDebug() << "Package:" << debFilePath;
+    qDebug() << "installLocalDeb 2:";
+    QDBusConnection bus = QDBusConnection::systemBus();
+    QDBusInterface dbus_iface("cn.kylinos.KylinUpdateManager", "/cn/kylinos/KylinUpdateManager",
+                              "cn.kylinos.KylinUpdateManager", bus);
+
+    qDebug() << dbus_iface.call("install_debfile", debFilePath);
+    //dbus_iface.call("exit");
 }

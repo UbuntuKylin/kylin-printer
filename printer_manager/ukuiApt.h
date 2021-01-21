@@ -77,4 +77,19 @@ private Q_SLOTS:
     void onProgressChanged(int progress);
     void onFinished(QApt::ExitStatus exitStatus);
 };
+
+//Add install local package and remote package with DBus KylinUpdateManager
+class PrinterUtility
+{
+public:
+    PrinterUtility() {}
+    ~PrinterUtility() {}
+    //bool getDebNames(struct PrinterInfo printer, QStringList &debNames);
+    void installPackage(QString packageName);
+    void installLocalDeb(QString debFilePath);
+
+};
+
+
+
 #endif //__UKUI_APT_H__
