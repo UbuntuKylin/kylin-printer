@@ -10,19 +10,21 @@
 class DeviceInformation
 {
 public:
+    QString name;       // 打印机的名字
     QString sysPath;    // sys下的目录
     QString devicePath; // dev下的目录 绝对路径
     QString deviceType; // 设备种类 打印机为07
     QString busNumber; 
-    
     QString deviceNumber;
     QString VID;       // usb vid
     QString PID;       // usb pid
     QString vendor;    // 供应商
     QString model;     // 型号
     QString serial;    // 序列号
-    QString uri;        // 设备uri
+    QString uri;            // 设备uri
     QString packageName;    // 包名
+    QString makeAndModel; // make-and-model
+    
     DeviceInformation();
     DeviceInformation(const QString &);
 
@@ -31,8 +33,6 @@ public:
     // qdebug 重定向
     friend QDebug operator << (QDebug debug, const DeviceInformation &);
 };
-
-
 
 
 // DeviceMonitor 用法：
@@ -57,8 +57,8 @@ public:
     // 设置是否需要只需要打印机 默认为true
     // 如果修改为false 则会识别所有接入的usb设备
     bool setFindPrinterOnly;
-    static QString getAllPrinterWithPDD();
-    static QString getAllPrinterConnected();
+    static QList<DeviceInformation> getAllPrinterWithPDD(const bool usbConnectOnly);
+    static QList<DeviceInformation> getAllPrinterConnected();
 public:
     static DeviceMonitor *getInstance();
     ~DeviceMonitor();

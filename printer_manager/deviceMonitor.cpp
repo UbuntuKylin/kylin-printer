@@ -250,6 +250,7 @@ QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
     debug.noquote();
     QString info = QString  ( QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
+                            + QString("name         is: ") + debugInfo.name      + QString('\n')
                             + QString("sysPath      is: ") + debugInfo.sysPath      + QString('\n')
                             + QString("devicePath   is: ") + debugInfo.devicePath   + QString("\n")
                             + QString("deviceType   is: ") + debugInfo.deviceType   + QString("\n")
@@ -262,6 +263,7 @@ QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
                             + QString("serial       is: ") + debugInfo.serial       + QString("\n")
                             + QString("uri          is: ") + debugInfo.uri          + QString("\n")
                             + QString("packageName  is: ") + debugInfo.packageName  + QString("\n")
+                            + QString("makeAndModel is: ") + debugInfo.makeAndModel + QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
                             );
     debug << info;
@@ -415,8 +417,6 @@ bool DeviceMonitor::usbDeivceRemove(const QString &qstr)
     return true;
 }
 
-
-
 // 调试模式
 void DeviceMonitor::setTestModelEnabled()
 {
@@ -442,29 +442,128 @@ void DeviceMonitor::sendTestSignals()
     flag = ~flag;
 }
 
-QString DeviceMonitor::getAllPrinterWithPDD()
+
+
+
+
+QString getUriHead(const QString &uri)
 {
-    QStringList res;
+    if (!uri.size())
+        return "";
+    QString head = uri.left(uri.indexOf(":"));
+    if (head.size())
+        return head;
+    return "";
+}
+
+cups_dest_t *getDestWithURI(const char *uri)
+{
+    qDebug() << "im in getDestWithURI";
+    qDebug() << uri;
     int i;
     cups_dest_t *dests, *dest;
+    const char *value;
     int num_dests = cupsGetDests(&dests);
-    for (i = num_dests, dest = dests; i > 0; i --, dest ++)
-    {
+
+    for (i = num_dests, dest = dests; i > 0; i --, dest ++) {
         if (dest->num_options) {
-            QString value = cupsGetOption("device-uri", dest->num_options, dest->options);
-            if (value.size()) {
-                res.append(value);
+            value = cupsGetOption("device-uri", dest->num_options, dest->options);
+            if ( value != NULL && strcmp(uri, value) == 0) {
+                return dest;
             }
         }
     }
-    return res.join(",");
+    return NULL;
 }
 
-QString DeviceMonitor::getAllPrinterConnected()
+DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
+{
+    DeviceInformation deviceInfo;
+    if (dest->name != NULL)
+        deviceInfo.name = dest->name;
+    if (dest->num_options) {
+        deviceInfo.makeAndModel = cupsGetOption("printer-make-and-model", dest->num_options, dest->options);
+        deviceInfo.uri = cupsGetOption("device-uri", dest->num_options, dest->options);
+    }
+    QString tempUri = deviceInfo.uri;
+    if (tempUri.contains("ipp") && tempUri.contains("%20")) {
+        tempUri.replace(tempUri.indexOf("%20"),3, "/");
+        // tempUri[tempUri.indexOf("%20")] = "/";
+    }
+    tempUri = QUrl(tempUri).toString();
+    QString head = getUriHead(tempUri);
+
+    if (head == "usb") {
+        tempUri.remove("usb://");
+        deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+        tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
+
+        //TODO: model带空格 只取第一个
+        deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+        tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
+        tempUri.remove("serial=");
+        if (tempUri.contains("&"))
+            deviceInfo.serial = tempUri.left(tempUri.indexOf("&"));
+        else
+            deviceInfo.serial = tempUri;
+    }
+    else if (head == "ipp" || head == "ipps") {
+        tempUri.remove("ipp://");
+        deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+        tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
+        tempUri = tempUri.left(tempUri.indexOf("."));
+        deviceInfo.model = tempUri.split(" ").at(0);
+    }
+    return deviceInfo;
+}
+
+QList<DeviceInformation> DeviceMonitor::getAllPrinterWithPDD(const bool usbConnectOnly)
+{
+    QList<DeviceInformation> res;
+    int i;
+    cups_dest_t *dests, *dest;
+    int num_dests = cupsGetDests(&dests);
+    qDebug() << num_dests;
+    for (i = num_dests, dest = dests; i > 0; i --, dest ++)
+    {
+        if (dest->num_options) {
+            QString uri = cupsGetOption("device-uri", dest->num_options, dest->options);
+            if (usbConnectOnly == true && !uri.contains("usb://")) {
+                continue;
+            }
+            QString value = cupsGetOption("printer-make-and-model", dest->num_options, dest->options);
+            if (value.size() && value != "Remote Printer") {
+                DeviceInformation device = getDeviceInformationFromDest(dest);
+                res.append(device);
+            }
+        }
+    }
+    return res;
+}
+
+
+QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
 {   
-    QStringList res;
-    res.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'", "-e", "\'ipp://\'"})
-                .remove("direct ").remove("network ").split("\n") 
-              );
-    return res.join(",");
+    QList<DeviceInformation> res;
+    QStringList uriList;
+    uriList.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'", "-e", "\'ipp://\'"})
+                    .remove("direct ")
+                    .remove("network ")
+                    .split("\n") 
+                  );
+
+    for (int i = 0; i < uriList.size(); i++) {
+        // qDebug () << i;
+        // printf("%s\n",uriList.at(i).toStdString().c_str());
+        // qDebug() << uriList.at(i).toStdString().c_str();
+        cups_dest_t *dest = getDestWithURI(uriList.at(i).toStdString().c_str());
+
+        if (dest == NULL) {
+            qDebug() << i << "is not find";
+            continue;
+        }
+        DeviceInformation device = getDeviceInformationFromDest(dest);
+        res.append(device);
+    }
+    return res;
 }
