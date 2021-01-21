@@ -161,8 +161,9 @@ DeviceInformation::DeviceInformation(const QString &qstr)
     }
 }
 
-QString getPackageNameFromHttp(const DeviceInformation &device)
+QStringList getPackagesNameFromHttp(DeviceInformation &device)
 {
+    QStringList res;
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
         #define __SYSTEM_VERSION__ "V10Professional"
     #else
@@ -188,10 +189,10 @@ QString getPackageNameFromHttp(const DeviceInformation &device)
     // &model=HL-3190CDW
     QString httpRequest = QString ( QString("https://api.kylinos.cn/api/v1/getprinterdrive")
                                   + "?" + QString("systemVersion=") + QString(__SYSTEM_VERSION__)
-                                  + "&" + QString("framework=")     + arch
+                                  + "&" + QString("arch=")          + arch
                                   + "&" + QString("pid=")           + device.PID
                                   + "&" + QString("vid=")           + device.VID
-                                  + "&" + QString("product=")       + device.vendor
+                                  + "&" + QString("manufacter=")    + device.vendor
                                   + "&" + QString("model=")         + device.model
                                   );
     QNetworkAccessManager manager;
@@ -199,7 +200,7 @@ QString getPackageNameFromHttp(const DeviceInformation &device)
     QNetworkReply *netReply;
     QEventLoop loop;
 
-    // httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10&framework=arm64&pid=00a5&vid=04f9&product=Brother&model=HL-3190CDW";
+    // httpRequest = "https://api.kylinos.cn/api/v1/getprinterdrive?systemVersion=V10Professional&arch=amd64&manufacter=cumtenn";
     netRequest.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
     netRequest.setUrl(QUrl(httpRequest));
     netReply = manager.get(netRequest);
@@ -208,25 +209,24 @@ QString getPackageNameFromHttp(const DeviceInformation &device)
     loop.exec();
 
     if (netReply->error() != QNetworkReply::NoError) {
-        return "";
+        return res;
     }
 
     QByteArray strRateAll = netReply->readAll();
     qDebug() << strRateAll;
     if (strRateAll == "") {
-        return "";
+        return res;
     }
     QJsonParseError jsonParserError;
     QJsonDocument jsonDocument = QJsonDocument::fromJson(strRateAll, &jsonParserError );
 
     if ( jsonDocument.isNull() || jsonParserError.error != QJsonParseError::NoError ) {
         qDebug () << "json解析失败";
-        return "";
+        return res;
     }
     else {
         qDebug() << "json解析成功!";
     }
-    QStringList ans;
     if (jsonDocument.isObject()) {
         QJsonObject jsonObject = jsonDocument.object();
         if ( jsonObject.contains("data")
@@ -235,14 +235,13 @@ QString getPackageNameFromHttp(const DeviceInformation &device)
             QJsonArray jsonArray = jsonObject.value("data").toArray();
             for ( int i = 0; i < jsonArray.size(); i++) {
                 if (jsonArray.at(i).isString()) {
-                    ans.append(jsonArray.at(i).toString());
+                    res.append(jsonArray.at(i).toString());
                 }
             }
         }
     }
-    // qDebug()<< ans;
-    
-    return ans.join(",");
+    device.packagesName = res;
+    return res;
 }
 
 QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
@@ -262,7 +261,7 @@ QDebug operator << (QDebug debug, const DeviceInformation &debugInfo)
                             + QString("model        is: ") + debugInfo.model        + QString("\n")
                             + QString("serial       is: ") + debugInfo.serial       + QString("\n")
                             + QString("uri          is: ") + debugInfo.uri          + QString("\n")
-                            + QString("packageName  is: ") + debugInfo.packageName  + QString("\n")
+                            + QString("packageName  is: ") + debugInfo.packagesName.join(",") + QString("\n")
                             + QString("makeAndModel is: ") + debugInfo.makeAndModel + QString("\n")
                             + QString("+++++++++++++++++++++++++++++++++\n")
                             );

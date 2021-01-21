@@ -22,13 +22,13 @@ public:
     QString model;     // 型号
     QString serial;    // 序列号
     QString uri;            // 设备uri
-    QString packageName;    // 包名
+    QStringList packagesName;    // 包名
     QString makeAndModel; // make-and-model
     
     DeviceInformation();
     DeviceInformation(const QString &);
 
-    friend QString getPackageNameFromHttp(const DeviceInformation &);
+    friend QStringList getPackagesNameFromHttp(DeviceInformation &);
     // static QString getPackageNameFromHttp(const QString &);
     // qdebug 重定向
     friend QDebug operator << (QDebug debug, const DeviceInformation &);
