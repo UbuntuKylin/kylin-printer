@@ -94,23 +94,15 @@ QMap<QString,QMap<QString,PPDsAndAttr>> FindPPDsThread::getPPDsFromCUPS()
             }
             if(ret.find(keyMFG) != ret.end())
             {
-                qDebug() << keyMFG << "厂商已存在于总map中";
                 auto &mfg = ret[keyMFG];
-                qDebug() << keyMFG << "对应的型号map大小为" << mfg.size();
-                qDebug() << "添加型号名为：" << a.ppd_make_and_model << "的ppd文件";
+
                 mfg.insert(a.ppd_make_and_model,a);
-                qDebug() << "添加完毕";
-                qDebug() << keyMFG << "对应的型号map大小为" << mfg.size();
             }
             else
             {
-                qDebug() << keyMFG << "厂商尚未存在于总map中";
-                qDebug() << "目前总map中共有：" << ret.size() << "种厂商";
                 QMap<QString,PPDsAndAttr> tempMap ;
                 tempMap.insert(a.ppd_make_and_model,a);
                 ret.insert(keyMFG,tempMap);
-                qDebug() << keyMFG << "厂商已添加到总map中";
-                qDebug() << "目前总map中共有：" << ret.size() << "种厂商";
             }
 
 
