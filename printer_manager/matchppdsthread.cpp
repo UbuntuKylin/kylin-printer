@@ -39,7 +39,7 @@ void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, myMap 
         auto &mfg = originData["generic"];
         qDebug() << "generic对应的map大小为" << mfg.size();
 
-        matchResult = genericMatch("generic" + ' ' + printerModelName, mfg, type);
+        matchResult = genericMatch(printerModelName, mfg, type);
         emit matchResultSignal(matchResult);
     }
 }
@@ -55,6 +55,15 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printe
     {
         emit matchFailed();
     }
+    printerModelList.removeAt(0);
+
+    printerModel.clear();
+
+    foreach (QString it , printerModelList)
+    {
+        printerModel.append(it);
+    }
+
     QString tempPrinterModel = nullptr;
     foreach (auto &letter, printerModel.toLower())
     {
@@ -79,7 +88,6 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printe
 
         foreach (auto keyPPDs, map.keys())
         {
-
             if (type == USB && map[keyPPDs].ppdname.contains("driverless"))
             {
                 continue;
@@ -137,6 +145,23 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printe
     {
         qDebug() << "找到匹配" << it << "个字符的PPD文件" << ret[it].size() << "个";
     }
+
+    if(ret.size() == 0)
+    {
+        if (ret.find(0) == ret.end())
+        {
+            QStringList noMatchGeneric;
+            QMap<QString, PPDsAndAttr>::iterator it = map.begin();
+            for(int i = 0;i < 3; it++)
+            {
+                noMatchGeneric.append(it.value().ppdname);
+                i++;
+            }
+
+            ret.insert((0), noMatchGeneric);
+        }
+    }
+
     return QPair<QMap<int, QStringList>, bool>(ret, false);
 
 }
@@ -242,15 +267,31 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch(QString printerMo
         foreach (auto it, ret.keys())
         {
             qDebug() << "找到匹配" << it << "个字符的PPD文件" << ret[it].size() << "个";
-        }
-        return QPair<QMap<int, QStringList>, bool>(ret, false);
+        }       
     }
     else
     {
         qDebug() << "找到了和" << printerModel << "精准匹配的PPD文件";
         qDebug() << "完全匹配的PPD文件名字为：" << ret[tempPrinterModel.size()];
-        return QPair<QMap<int, QStringList>, bool>(ret, true);
     }
+
+    if(ret.size() == 0)
+    {
+        if (ret.find(0) == ret.end())
+        {
+            QStringList noMatchGeneric;
+            QMap<QString, PPDsAndAttr>::iterator it = map.begin();
+            for(int i = 0;i < 3; it++)
+            {
+                noMatchGeneric.append(it.value().ppdname);
+                i++;
+            }
+
+            ret.insert((0), noMatchGeneric);
+        }
+    }
+
+    return QPair<QMap<int, QStringList>, bool>(ret, false);
 }
 
 QString MatchPPDsThread::originStringHandle(QString originString)
