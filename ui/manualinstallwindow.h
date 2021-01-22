@@ -101,10 +101,12 @@ private:
 
     void displayInstalling();//显示正在安装的图片
 
+    void dropDebInstall(QString localPath);//放手手安装deb包
+
 protected:
 
+    bool eventFilter(QObject *watched, QEvent *event);
     void dropEvent(QDropEvent *);//放手手
-    void dragEnterEvent(QDragEnterEvent *event);//拖拽
 
 signals:
     void updatePpdList();

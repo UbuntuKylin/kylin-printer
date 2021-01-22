@@ -28,8 +28,9 @@ public:
     explicit PopWindow(QWidget *parent = nullptr);
 
     static PopWindow *popMutual;
-private:
     ManualInstallWindow *manual; //手动安装驱动界面
+private:
+
     DeviceInformation printer;
     SuccedFailWindow *succeed_fail;
     PropertyWindow *property;

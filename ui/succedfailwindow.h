@@ -12,6 +12,7 @@
 #include <QToolButton>
 #include <QLineEdit>
 #include <QLabel>
+#include <QTimer>
 
 #include "manualinstallwindow.h"
 
@@ -25,6 +26,8 @@ public:
     QPushButton *printTestBtn;//打印测试页按钮
 private:
 
+    QMessageBox *Msg;
+    QTimer *isPrintTimer;
 
     QWidget *mainWid;
     QWidget *titleWid;
@@ -54,6 +57,8 @@ private:
 public slots:
     void onShowSucceedFailWindow(QString printer,bool isSuccess);
     void printSlot();
+    void timeOutSlot();
+
 signals:
 
 };

@@ -1,4 +1,5 @@
 #include "popwindow.h"
+#include "xatom-helper.h"
 
 #define g_cupsConnection (CupsConnection4PPDs::getInstance()) //CUPS连接建立实例化
 
@@ -11,14 +12,23 @@ PopWindow::PopWindow(QWidget *parent)
     int HEIGHT = 188;
     popMutual = this;
 
-    this->setFixedSize(WIDTH, HEIGHT);
-    QScreen *screen = QGuiApplication::primaryScreen();
-    this->move(screen->geometry().topRight());
     setWindowTitle(tr("打印机"));
-    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+//    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     //    move((screen->geometry().width() - WIDTH) /2,(screen->geometry().height() - HEIGHT) / 2);
     initControls();                                           //初始化控件
     initPopWindow();                                          //初始化弹窗
+
+    MotifWmHints hints;
+    hints.flags = MWM_HINTS_FUNCTIONS|MWM_HINTS_DECORATIONS;
+    hints.functions = MWM_FUNC_ALL;
+    hints.decorations = MWM_DECOR_BORDER;
+    XAtomHelper::getInstance()->setWindowMotifHint(mainWid->winId(), hints);
+
+    mainWid ->setFixedSize(WIDTH,HEIGHT);
+    QScreen *screen = QGuiApplication::primaryScreen();
+    mainWid -> move(screen->geometry().topRight());
+    mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+
     manual = new ManualInstallWindow;                         //手动安装驱动界面
     succeed_fail = new SuccedFailWindow;
     property = new PropertyWindow;
@@ -101,7 +111,7 @@ PopWindow::PopWindow(QWidget *parent)
 
 //    connect(this,&PopWindow::basicParameter,manual,&ManualInstallWindow:);
 
-    connect(closeButton, &QPushButton::clicked, this, &PopWindow::hide);
+    connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
 
 //    connect(succeed_fail,&SuccedFailWindow::printTestSignal,this,&PopWindow::print);
     //必须在检测插拔的槽函数后执行,先检测是否插拔再执行线程
@@ -167,24 +177,20 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     appNameLabel->setText(tr("打印机"));
     seatlb->setText("  "); //占位
     closeButton->setIcon(QIcon::fromTheme("window-close-symbolic"));
-    closeButton->setFixedSize(24, 24);
+    closeButton->setFixedSize(30,30);
     closeButton->setProperty("isWindowButton", 0x2);
     closeButton->setProperty("useIconHighlightEffect", 0x8);
     closeButton->setFlat(true);
-    closeButton->setStyleSheet("QPushButton{border-radius:4px;}"
-                               "QPushButton:hover{background-color:#F86457;}"
-                               "QPushButton:pressed{background-color:#E44C50;}");
 
     //中间部分
     picButton->setIcon(QIcon(":/svg/printer_logo.svg"));
     picButton->setFixedSize(48, 48);
     picButton->setIconSize(QSize(48, 48));
     picButton->setStyleSheet("border-radius:4px;");
-    isMonitorEdit->setFixedSize(300, 25);
+    isMonitorEdit->setFixedSize(300, 30);
     isMonitorEdit->setFocusPolicy(Qt::NoFocus);
     isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + " " + printerDevice.model);
-    isMonitorEdit->setStyleSheet("background-color:pink;/*QLineEdit{border:1px solid rgba(255,0,0,0.5);}*/");
-    isMonitorEdit->setStyleSheet("font:14px;");
+    isMonitorEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
 
     //加载图标、安装中...
     loadPic->setIcon(QIcon::fromTheme("ukui-loading-0")); //初始默认图片0
@@ -239,7 +245,8 @@ void PopWindow::setPopWindow()
     titleLayout->addWidget(appNameLabel);
     titleLayout->addWidget(seatlb);
     titleLayout->addWidget(closeButton);
-    titleLayout->setContentsMargins(8, 8, 8, 0);
+    titleLayout->setContentsMargins(0, 0, 0, 0);
+    titleLayout->setSpacing(4);
     titleWid->setLayout(titleLayout);
     titleWid->setFixedHeight(35);
 
@@ -264,15 +271,15 @@ void PopWindow::setPopWindow()
     mainLayout->addWidget(titleWid);
     mainLayout->addWidget(middleWid);
     mainLayout->addWidget(buttonStack, 0, Qt::AlignRight);
-    mainLayout->setSpacing(2);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(4, 4, 4, 4);
+    mainLayout->setSpacing(0);
     mainWid->setLayout(mainLayout);
 
-    mainWid->setObjectName("mainWid");
-    mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);border-radius:6px ;background-color:#FFFFFF;}"); //主窗体圆角
-    this->setWindowFlags((Qt::FramelessWindowHint));                                                                    //设置窗体无边框**加窗管协议后要将此注释调**
-    this->setAttribute(Qt::WA_TranslucentBackground);                                                                   //主窗体透明
-    this->setCentralWidget(mainWid);
+//    mainWid->setObjectName("mainWid");
+//    mainWid->setStyleSheet(".QWidget{background-color:#FFFFFF;}"); //主窗体圆角
+//    this->setWindowFlags((Qt::FramelessWindowHint));                                               //设置窗体无边框**加窗管协议后要将此注释调**
+//    this->setAttribute(Qt::WA_TranslucentBackground);                                              //主窗体透明
+//    this->setCentralWidget(mainWid);
 }
 
 //查找PPD列表，找到
@@ -333,7 +340,6 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
     static int i=0;
     i++;
-    qDebug()<<"JJJJJJJJJJJJJJ"<<i;
     name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();
@@ -378,14 +384,14 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
             }
         }
 
-        this->show();
+        mainWid->show();
     }
     else
     {
         qDebug() << "气泡消失";
         qDebug() << i;
         timer->stop();
-        this->hide();
+        mainWid->hide();
         succeed_fail->hide();//成功或失败界面消失
         manual->hide(); //手动安装驱动界面消失
 
@@ -455,7 +461,7 @@ void PopWindow::print()
 void PopWindow::showManualWindow()
 {
 
-    this->hide();
+    mainWid->hide();//点击了手动安装时就要隐藏气泡弹窗
     emit this->signalClickManualButton(m_printer.vendor.c_str(), m_printer.prodect.c_str(), m_printer.uri.c_str(), ppdList, isExact);
 }
 
