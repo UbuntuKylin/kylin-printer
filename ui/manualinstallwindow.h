@@ -37,10 +37,11 @@ public:
 
     QLabel *Namelb;//名称
     QLineEdit *printerName;//打印机名称
+    QWidget *mainWid;//主Wid
 private:
 
 
-    QWidget *mainWid;//主Wid
+
     QVBoxLayout *mainLayout;//主布局
     QWidget *titleWid;//标题栏Wid
     QHBoxLayout *titleLayout;//标题栏布局

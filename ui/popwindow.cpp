@@ -28,6 +28,7 @@ PopWindow::PopWindow(QWidget *parent)
     QScreen *screen = QGuiApplication::primaryScreen();
     mainWid -> move(screen->geometry().topRight());
     mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    mainWid -> setWindowTitle(tr("打印机"));
 
     manual = new ManualInstallWindow;                         //手动安装驱动界面
     succeed_fail = new SuccedFailWindow;

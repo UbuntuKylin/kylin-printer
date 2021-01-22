@@ -6,7 +6,7 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
 {
     int WIDTH = 620;
     int HEIGHT = 660;
-    setWindowTitle(tr("手动安装打印机驱动"));
+
 
 
 
@@ -16,8 +16,6 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
 
     SuccedFailWindow *window = new SuccedFailWindow;
     connect(this,&ManualInstallWindow::manualAddSignal,window,&SuccedFailWindow::onShowSucceedFailWindow);
-
-
 
     initManualControls();
     initManualWindow();
@@ -37,8 +35,8 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
 
     QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
     mainWid -> move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
-
     mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    mainWid -> setWindowTitle(tr("手动安装打印机驱动"));
 
     connect(closeBtn,  &QPushButton::clicked, mainWid, &ManualInstallWindow::hide);
     connect(cancelBtn, &QPushButton::clicked, mainWid, &ManualInstallWindow::hide);
@@ -589,5 +587,5 @@ void ManualInstallWindow::manualAddPrinter()
     {
         emit manualAddSignal(printerName->text(),isManualInstallSuccess);
     }
-
+    mainWid->hide();
 }
