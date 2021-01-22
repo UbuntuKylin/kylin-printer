@@ -251,7 +251,7 @@ void ManualInstallWindow::initManualControls()
     //取消和添加按钮
     cancelBtn = new QPushButton(this);
     addBtn = new QPushButton(this);
-    qDebug()<<"setenable shixiaoshuo";
+
     addBtn->setEnabled(true);
     connect(addBtn,&QPushButton::clicked,this,&ManualInstallWindow::manualAddPrinter);
     connect(addLocalDriverBtn,&QPushButton::clicked,this,&ManualInstallWindow::addLocalDriverSlot);

@@ -90,11 +90,11 @@ PopWindow::PopWindow(QWidget *parent)
     connect(pMatchPPDs, &QThread::finished, cmdMatchPPDs, &QObject::deleteLater); //挂载
     connect(this, SIGNAL(signalMatchPPDsThread(QString, QString, myMap, int)), cmdMatchPPDs, SLOT(initPPDMatch(QString, QString, myMap, int)));
     connect(cmdMatchPPDs, &MatchPPDsThread::matchFailed, this, [=] { qDebug() << "查询失败！"; }); //直接失败
-    connect(cmdMatchPPDs, SIGNAL(matchResultSignal(resultMap)), this, SLOT(matchResultSlot(resultMap)));
+    connect(cmdMatchPPDs, SIGNAL(matchResultSignal(resultPair)), this, SLOT(matchResultSlot(resultPair)));
 
     //匹配成功后发送给手动界面消息
     connect(this,&PopWindow::matchSuccessSignal,manual,&ManualInstallWindow::matchSuccessSlot);
-    qRegisterMetaType<resultMap>("resultMap"); //注册自己的类型，必须！！！！！
+    qRegisterMetaType<resultPair>("resultPair"); //注册自己的类型，必须！！！！！
 
     pFindPPDs->start();
     //*************************************************************************************
@@ -291,7 +291,7 @@ void PopWindow::gotAllHandledPPDs(myMap temp)
     qDebug() << "总共" << timeTag;
 }
 
-void PopWindow::matchResultSlot(resultMap res)
+void PopWindow::matchResultSlot(resultPair res)
 {
     qDebug() << res.second;
     if (res.second)

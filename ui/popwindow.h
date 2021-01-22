@@ -135,7 +135,7 @@ private slots:
 
     void showManualWindow();                  //显示手动安装
     void gotAllHandledPPDs(myMap);
-    void matchResultSlot(resultMap res);
+    void matchResultSlot(resultPair res);
     void prematchResultSlot();
 
 

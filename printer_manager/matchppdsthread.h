@@ -11,7 +11,7 @@ enum deviceType
     SHARED,
     NONEPRINTER
 };
-typedef QPair<QMap<int, QStringList>, bool> resultMap;
+typedef QPair<QMap<int, QStringList>, bool> resultPair;
 
 class MatchPPDsThread : public QObject
 {
@@ -21,7 +21,7 @@ public:
 
 signals:
     void matchFailed();
-    void matchResultSignal(resultMap res);
+    void matchResultSignal(resultPair res);
 public slots:
     void initPPDMatch(QString bandName, QString printerName, myMap data, int type);
 
@@ -31,8 +31,8 @@ private:
     QString printerBandName = nullptr;
     QString printerModelName = nullptr;
 
-    QStringList eactMatch1(QString printerModel, QMap<QString, PPDsAndAttr> map);
-    QPair<QMap<int, QStringList>, bool> eactMatch2(QString printerModel, QMap<QString, PPDsAndAttr> map, int type);
+    QPair<QMap<int, QStringList>, bool> eactMatch(QString printerModel, QMap<QString, PPDsAndAttr> map, int type);
+    QPair<QMap<int, QStringList>, bool> genericMatch(QString printerModel, QMap<QString, PPDsAndAttr> map, int type);
 
     bool exactMatchFlag = false;
 
