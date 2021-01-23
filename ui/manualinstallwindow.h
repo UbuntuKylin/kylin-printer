@@ -37,10 +37,11 @@ public:
 
     QLabel *Namelb;//名称
     QLineEdit *printerName;//打印机名称
+    QWidget *mainWid;//主Wid
 private:
 
 
-    QWidget *mainWid;//主Wid
+
     QVBoxLayout *mainLayout;//主布局
     QWidget *titleWid;//标题栏Wid
     QHBoxLayout *titleLayout;//标题栏布局
@@ -101,10 +102,12 @@ private:
 
     void displayInstalling();//显示正在安装的图片
 
+    void dropDebInstall(QString localPath);//放手手安装deb包
+
 protected:
 
+    bool eventFilter(QObject *watched, QEvent *event);
     void dropEvent(QDropEvent *);//放手手
-    void dragEnterEvent(QDragEnterEvent *event);//拖拽
 
 signals:
     void updatePpdList();
