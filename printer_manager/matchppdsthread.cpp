@@ -291,7 +291,7 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::eactMatch(QString printerMo
         }
     }
 
-    return QPair<QMap<int, QStringList>, bool>(ret, false);
+    return QPair<QMap<int, QStringList>, bool>(ret, exactMatchFlag);
 }
 
 QString MatchPPDsThread::originStringHandle(QString originString)
