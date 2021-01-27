@@ -95,6 +95,8 @@ private:
 
     ukuiUsbPrinter m_printer;
 
+    QValidator *validator;
+
     void initManualControls();
     void setManualControls();
     void initManualWindow();

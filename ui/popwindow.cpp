@@ -41,9 +41,20 @@ PopWindow::PopWindow(QWidget *parent)
     DeviceMonitor::getInstance()->start();
     QObject::connect(DeviceMonitor::getInstance(), &DeviceMonitor::findUsbConnect, [=](const DeviceInformation &test) {
         printer = test;
+        QList<DeviceInformation> res;
+        res = DeviceMonitor::getAllPrinterWithPDD(true);
+        for (int i=0 ;i<res.count();i++)
+        {
+            if(test.uri == res.at(i).uri)
+            {
+                qDebug()<<"找到了1"<<test.uri;
+                return ;
+            }
+        }
         emit monitorDriver(test, true); //两个参数:1.打印机信息2.是否安装成功；测试时直接改变true或false就可以
-
         isExistDriver = true;
+        qDebug()<<"end monitorDriver";
+
     });
     QObject::connect(DeviceMonitor::getInstance(), &DeviceMonitor::findUsbDisconnect, [=](const DeviceInformation &test) {
         printer = test;
@@ -114,8 +125,35 @@ PopWindow::PopWindow(QWidget *parent)
 
     connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
 
+    QList<DeviceInformation> res = DeviceMonitor::getAllPrinterConnected();
+    for(int j = 0;j< res.count(); j++)
+    {
+        coldBoot(res.at(j));
+    }
+
 //    connect(succeed_fail,&SuccedFailWindow::printTestSignal,this,&PopWindow::print);
     //必须在检测插拔的槽函数后执行,先检测是否插拔再执行线程
+}
+
+void PopWindow::coldBoot(DeviceInformation test)
+{
+    qDebug()<<"********************"<<test.uri;
+
+    QList<DeviceInformation> res;
+    res = DeviceMonitor::getAllPrinterWithPDD(true);
+    for (int i=0 ;i<res.count();i++)
+    {
+        if(test.uri == res.at(i).uri)
+        {
+            qDebug()<<"找到了2"<<test.uri;
+            qDebug()<<test<<res.at(i);
+            return ;
+        }
+    }
+    isExistDriver = true;
+    emit monitorDriver(test, true); //两个参数:1.打印机信息2.是否安装成功；测试时直接改变true或false就可以
+
+    qDebug()<<"end monitorDriver";
 }
 
 //初始化气泡内控件

@@ -559,12 +559,50 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
         // qDebug() << uriList.at(i).toStdString().c_str();
         cups_dest_t *dest = getDestWithURI(uriList.at(i).toStdString().c_str());
 
-        if (dest == NULL) {
-            qDebug() << i << "is not find";
+        if (dest != NULL) {
+            DeviceInformation device = getDeviceInformationFromDest(dest);
+            res.append(device);
             continue;
         }
-        DeviceInformation device = getDeviceInformationFromDest(dest);
-        res.append(device);
+        qDebug() << i << "is not find in dests!";
+
+        // 如果没找到 代表是新连入还没有驱动的打印机
+        DeviceInformation deviceInfo;
+        deviceInfo.uri = uriList.at(i);
+        if (deviceInfo.uri.isEmpty() ) {
+            qDebug() << i << "is not find uri!";
+            continue;
+        }
+        QString tempUri = deviceInfo.uri;
+        if (tempUri.contains("ipp") && tempUri.contains("%20")) {
+            tempUri.replace(tempUri.indexOf("%20"),3, "/");
+            // tempUri[tempUri.indexOf("%20")] = "/";
+        }
+        tempUri = QUrl(tempUri).toString();
+        QString head = getUriHead(tempUri);
+
+        if (head == "usb") {
+            tempUri.remove("usb://");
+            deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+            tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
+
+            //TODO: model带空格 只取第一个
+            deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+            tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
+            tempUri.remove("serial=");
+            if (tempUri.contains("&"))
+                deviceInfo.serial = tempUri.left(tempUri.indexOf("&"));
+            else
+                deviceInfo.serial = tempUri;
+        }
+        else if (head == "ipp" || head == "ipps") {
+            tempUri.remove("ipp://");
+            deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+            tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
+            tempUri = tempUri.left(tempUri.indexOf("."));
+            deviceInfo.model = tempUri.split(" ").at(0);
+        }
+        res.append(deviceInfo);
     }
     return res;
 }

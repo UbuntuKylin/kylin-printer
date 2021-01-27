@@ -7,9 +7,6 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
     int WIDTH = 620;
     int HEIGHT = 660;
 
-
-
-
     installingTimer = new QTimer(this);
 
     connect(installingTimer,&QTimer::timeout,this,&ManualInstallWindow::displayInstalling);
@@ -145,7 +142,7 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
         QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("路径不能为空!"),QMessageBox::Yes);
         msg->button(QMessageBox::Yes)->setText(tr("确认"));
         msg->exec();
-        return ;
+
     }
 
 }
@@ -238,6 +235,9 @@ void ManualInstallWindow::initManualControls()
     //名称行
     Namelb = new QLabel(this);       //名称
     printerName = new QLineEdit(this); //打印机名称
+    QRegExp regx("[a-zA-Z0-9\-\\\_]{25}");
+    validator = new QRegExpValidator(regx,printerName);
+    printerName->setValidator(validator);
     //位置行
     locationlb = new QLabel(this);          //位置
     driverlocalation = new QLineEdit(this); //驱动位置
@@ -298,6 +298,7 @@ void ManualInstallWindow::setManualControls()
     printerName->setFixedSize(442, 36);
     printerName->setText("HP-printer-lasevcP1106");
     printerName->setAcceptDrops(false);
+
     locationlb->setText(tr("位置"));
     driverlocalation->setFixedSize(442, 36);
     driverlocalation->setText(tr("办公室"));
@@ -567,7 +568,14 @@ void ManualInstallWindow::manualAddPrinter()
 {
     qDebug()<<"正在安装打印机驱动...";
 //    emit manualAddSignal(m_vendor + " " + m_product,bool isSuccess);
+    if(printerName->text() =="")
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机名称不可为空!"),QMessageBox::Yes);
 
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+        return ;
+    }
     m_printer.name = printerName->text().toStdString();
     m_printer.uri = m_uri.toStdString();
     m_printer.ppdName = dropDownList->currentText().toStdString();
