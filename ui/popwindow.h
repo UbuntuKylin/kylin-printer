@@ -85,6 +85,7 @@ private:
     void setPopWindow();                       //设置PopWindow布局
     void loadingPicDisplay();                  //加载图标动态显示
 
+    void coldBoot(DeviceInformation test);                           //冷启动
 //    QString m_vendor;
 //    QString m_product;
 //    QString m_uri;

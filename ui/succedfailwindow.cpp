@@ -147,16 +147,9 @@ void SuccedFailWindow::setWindow()
 
 void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
 {
-    if(printer =="")
-    {
-        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机名称不可为空!"),QMessageBox::Yes);
 
-        msg->button(QMessageBox::Yes)->setText(tr("确认"));
-        msg->exec();
-        mainWid->hide();
-        return ;
-    }
-//    isSuccess = false;//测试时使用
+
+    //    isSuccess = false;//测试时使用
     if(isSuccess)
     {
         qDebug()<<"打印机"<<printer;
@@ -173,6 +166,7 @@ void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
     }
 
     mainWid->show();
+
 }
 
 void SuccedFailWindow::timeOutSlot()
