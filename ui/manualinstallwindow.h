@@ -110,6 +110,7 @@ protected:
 
     bool eventFilter(QObject *watched, QEvent *event);
     void dropEvent(QDropEvent *);//放手手
+    void keyPressEvent(QKeyEvent  *event);
 
 signals:
     void updatePpdList();

@@ -126,6 +126,7 @@ PopWindow::PopWindow(QWidget *parent)
     connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
 
     QList<DeviceInformation> res = DeviceMonitor::getAllPrinterConnected();
+
     for(int j = 0;j< res.count(); j++)
     {
         coldBoot(res.at(j));
@@ -137,7 +138,6 @@ PopWindow::PopWindow(QWidget *parent)
 
 void PopWindow::coldBoot(DeviceInformation test)
 {
-    qDebug()<<"********************"<<test.uri;
 
     QList<DeviceInformation> res;
     res = DeviceMonitor::getAllPrinterWithPDD(true);

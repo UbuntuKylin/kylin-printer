@@ -1,3 +1,9 @@
+kylin-printer (1.0.7kord~rc1) v101; urgency=medium
+
+  * 修改冷启动流程
+
+ -- baijincheng <baijincheng@kylinos.cn>  Thu, 28 Jan 2021 19:31:00 +0800
+
 kylin-printer (1.0.6) v101; urgency=medium
 
   * 修复bug#35968：手动安装界面关闭“打印机名称不可为空”的提示后，手动安装界面退出

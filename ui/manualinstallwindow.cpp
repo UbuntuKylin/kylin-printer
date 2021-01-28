@@ -40,6 +40,12 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
 
 }
 
+
+void ManualInstallWindow::keyPressEvent(QKeyEvent  *event)
+{
+
+}
+
 bool ManualInstallWindow::eventFilter(QObject *watched, QEvent *event)
 {
     if(watched ==addDriverWid)
@@ -235,7 +241,9 @@ void ManualInstallWindow::initManualControls()
     //名称行
     Namelb = new QLabel(this);       //名称
     printerName = new QLineEdit(this); //打印机名称
+
     QRegExp regx("[a-zA-Z0-9\-\\\_]{25}");
+
     validator = new QRegExpValidator(regx,printerName);
     printerName->setValidator(validator);
     //位置行
