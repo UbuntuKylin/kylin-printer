@@ -53,7 +53,7 @@ void SuccedFailWindow::init()
     titleLabel      = new QLabel(this);
     closeBtn        = new QToolButton(this);
     picBtn          = new QPushButton(this);//对号与叉子图标
-    printerName     = new QLabel(this);//打印机名称
+    printerName     = new MyLabel(this);//打印机名称
     messageLineEdit = new QLineEdit(this);//消息
     printTestBtn    = new QPushButton(this);//打印测试页按钮
     viewDeviceBtn   = new QPushButton(this);//查看设备
@@ -63,6 +63,8 @@ void SuccedFailWindow::init()
     mainWid      = new QWidget();
     titleWid     = new QWidget();
     centerWid    = new QWidget();
+    printerNameWid = new QWidget();//打印机名的Wid
+    messageWid     = new QWidget();//成功与否的信息行
     bottom_1Wid    = new QWidget();//安装成功时的按钮组Wid
     bottom_2Wid    = new QWidget();//安装失败时的按钮组Wid
     twoButtonStackWid = new QStackedWidget();//安装成功与失败的按钮组的堆叠Wid
@@ -70,6 +72,8 @@ void SuccedFailWindow::init()
     mainLayout   = new QVBoxLayout();
     titleLayout  = new QHBoxLayout();
     centerLayout = new QVBoxLayout();
+    printerNameLayout = new QHBoxLayout();//打印机名布局
+    messageLayout = new QHBoxLayout();//成功与否的信息布局
     bottom_1Layout = new QHBoxLayout();//安装成功时的按钮组layout
     bottom_2Layout = new QHBoxLayout();//安装失败时的按钮组layout
 
@@ -91,9 +95,10 @@ void SuccedFailWindow::setWindow()
     picBtn->setIcon(QIcon::fromTheme("ukui-dialog-success"));
     picBtn->setStyleSheet("border-radius:4px;");
 
-    printerName->setFixedSize(240,30);
+    printerName->setFixedSize(120,30);
 
-    messageLineEdit->setFixedSize(173,31);
+    messageLineEdit->setFixedSize(240,30);
+    messageLineEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
 
     printTestBtn->setFixedSize(120,36);
     printTestBtn->setText(tr("打印测试"));
@@ -104,6 +109,11 @@ void SuccedFailWindow::setWindow()
     cloudPrintBtn->setFixedSize(120,36);
     cloudPrintBtn->setText(tr("使用云打印"));
 
+    printerNameLayout->addWidget(printerName);
+    printerNameWid->setLayout(printerNameLayout);
+    messageLayout->addWidget(messageLineEdit);
+    messageWid->setLayout(messageLayout);
+
     titleLayout->addWidget(titleLabel);
     titleLayout->addStretch();
     titleLayout->setContentsMargins(0, 0, 0, 0);
@@ -113,8 +123,8 @@ void SuccedFailWindow::setWindow()
 
     centerLayout->addStretch();
     centerLayout->addWidget(picBtn,0,Qt::AlignCenter);
-    centerLayout->addWidget(printerName,0,Qt::AlignCenter);
-//    centerLayout->addWidget(messageLineEdit,0,Qt::AlignCenter);
+    centerLayout->addWidget(printerNameWid,0,Qt::AlignCenter);
+    centerLayout->addWidget(messageWid,0,Qt::AlignCenter);
     centerLayout->addStretch();
     centerWid->setLayout(centerLayout);
 
@@ -123,7 +133,7 @@ void SuccedFailWindow::setWindow()
     bottom_1Wid->setLayout(bottom_1Layout);
 
     bottom_2Layout->addWidget(reinstallBtn);
-//    bottom_2Layout->addWidget(cloudPrintBtn);
+//    bottom_2Layout->addWidget(cloudPrintBtn);//暂时无云打印功能先禁掉
     bottom_2Wid->setLayout(bottom_2Layout);
 
     twoButtonStackWid->addWidget(bottom_1Wid);
@@ -154,6 +164,7 @@ void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
     {
         qDebug()<<"打印机"<<printer;
         printerName->setText("打印机"+printer+"安装成功!");
+        messageLineEdit->setText("请打印测试页查看打印机是否正常!");
         picBtn->setIcon(QIcon::fromTheme("ukui-dialog-success"));
         printerDeviceName = printer;
         twoButtonStackWid->setCurrentIndex(0);
@@ -162,6 +173,7 @@ void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
     {
         printerName->setText("打印机"+printer+"安装失败!");
         picBtn->setIcon(QIcon::fromTheme("dialog-error"));
+        messageLineEdit->setText("请检查打印机驱动是否正确!");
         twoButtonStackWid->setCurrentIndex(1);
     }
 

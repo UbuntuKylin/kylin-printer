@@ -13,6 +13,8 @@
 #include <QLineEdit>
 #include <QLabel>
 
+
+
 class PropertyWindow : public QMainWindow
 {
     Q_OBJECT

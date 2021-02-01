@@ -20,6 +20,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+
+#include "mylabel.h"
 #include "ukuiApt.h"
 #include "ukuiPrinter.h"
 
@@ -38,9 +40,14 @@ public:
     QLabel *Namelb;//名称
     QLineEdit *printerName;//打印机名称
     QWidget *mainWid;//主Wid
+
+    QLineEdit *driverlocalation;//驱动位置
+
+
 private:
 
-
+    int WIDTH = 620;
+    int HEIGHT = 660;
 
     QVBoxLayout *mainLayout;//主布局
     QWidget *titleWid;//标题栏Wid
@@ -83,7 +90,7 @@ private:
     //打印机名称在public中
 
     QLabel *locationlb;//位置
-    QLineEdit *driverlocalation;//驱动位置
+
     QLabel *ppdlb;//pdd文件
     QLineEdit *ppd;//pdd文件名
     QComboBox *dropDownList;//下拉框存ppd

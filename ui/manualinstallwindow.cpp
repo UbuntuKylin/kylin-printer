@@ -4,8 +4,7 @@
 
 ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent), m_apt(nullptr)
 {
-    int WIDTH = 620;
-    int HEIGHT = 660;
+
 
     installingTimer = new QTimer(this);
 
@@ -116,7 +115,9 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
         if (m_apt == nullptr)
         {
             /* code */
+
             m_apt = new ukuiApt(debPath);
+
             if (m_apt != nullptr)
             {
 
@@ -124,6 +125,7 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
 
                 connect(m_apt, &ukuiApt::reportInstallStatus,
                         this, &ManualInstallWindow::onPackageInstalled);
+
                 connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
                 if(m_apt->install())
                 {
@@ -134,12 +136,18 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
                 {
                     installingTimer->stop();
                     installPic->hide();
-                    m_apt = nullptr;
+
+                    QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("您不能使用非法的deb包!"),QMessageBox::Yes);
+
+                    msg->button(QMessageBox::Yes)->setText(tr("确认"));
+                    msg->exec();
                     disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
+                    delete m_apt;
+                    m_apt = nullptr;
+                    return ;
                 }
 
-
-            }
+            }            
 
         }
     }
@@ -155,62 +163,64 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
 
 void ManualInstallWindow::dropEvent(QDropEvent *event) //放下事件
 {
-    auto urls = event->mimeData()->urls();
-    if (urls.isEmpty())
-    {
-        return;
-    }
-    QStringList localpath;
-    for (auto &url : urls)
-    {
-        localpath << url.toLocalFile();
-    }
+//    auto urls = event->mimeData()->urls();
+//    if (urls.isEmpty())
+//    {
+//        return;
+//    }
+//    QStringList localpath;
+//    for (auto &url : urls)
+//    {
+//        localpath << url.toLocalFile();
+//    }
 
-    qDebug() << "localpath:" << localpath;//如果他拖拽了一堆则默认选择第0个元素
-    QFileInfo fileinfo(localpath.at(0));
-    QString fileSuffix = fileinfo.suffix();
-    if(fileSuffix != "deb")
-    {
-        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("请选择deb包!!!"),QMessageBox::Yes);
+//    qDebug() << "localpath:" << localpath;//如果他拖拽了一堆则默认选择第0个元素
+//    QFileInfo fileinfo(localpath.at(0));
+//    QString fileSuffix = fileinfo.suffix();
+//    if(fileSuffix != "deb")
+//    {
+//        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("请选择deb包!!!"),QMessageBox::Yes);
 
-        msg->button(QMessageBox::Yes)->setText(tr("确认"));
-        msg->exec();
-        return ;
-    }
+//        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+//        msg->exec();
+//        return ;
+//    }
 
-    if (!localpath.isEmpty())
-    {
+//    if (!localpath.isEmpty())
+//    {
 
-        if (m_apt == nullptr)
-        {
-            /* code */
-            m_apt = new ukuiApt(localpath.at(0));
-            if (m_apt != nullptr)
-            {
+//        if (m_apt == nullptr)
+//        {
+//            /* code */
+//            m_apt = new ukuiApt(localpath.at(0));
+//            if (m_apt != nullptr)
+//            {
 
-                installPic->show();
+//                installPic->show();
 
-                connect(m_apt, &ukuiApt::reportInstallStatus,
-                        this, &ManualInstallWindow::onPackageInstalled);
-                connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
-                if(m_apt->install())
-                {
-                    installingTimer->start(100);
+//                connect(m_apt, &ukuiApt::reportInstallStatus,
+//                        this, &ManualInstallWindow::onPackageInstalled);
+//                connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
+//                if(m_apt->install())
+//                {
+//                    installingTimer->start(100);
 
-                }
-                else
-                {
-                    installingTimer->stop();
-                    installPic->hide();
-                    m_apt = nullptr;
-                    disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
-                }
+//                }
+//                else
+//                {
+//                    installingTimer->stop();
+//                    installPic->hide();
 
 
-            }
+//                    disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
+//                    m_apt = nullptr;
+//                }
 
-        }
-    }
+
+//            }
+
+//        }
+//    }
 }
 
 void ManualInstallWindow::displayInstalling()
@@ -248,7 +258,7 @@ void ManualInstallWindow::initManualControls()
     printerName->setValidator(validator);
     //位置行
     locationlb = new QLabel(this);          //位置
-    driverlocalation = new QLineEdit(this); //驱动位置
+    driverlocalation = new QLineEdit(this); //打印机位置
     //ppd行
     ppdlb = new QLabel(this);  //ppd文件
     ppd = new QLineEdit(this); //ppd文件名
@@ -579,7 +589,7 @@ void ManualInstallWindow::manualAddPrinter()
     if(printerName->text() =="")
     {
         QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机名称不可为空!"),QMessageBox::Yes);
-
+//        msg->move((mainWid->geometry().width() - WIDTH) / 2, (mainWid->geometry().height() - HEIGHT) / 2);
         msg->button(QMessageBox::Yes)->setText(tr("确认"));
         msg->exec();
         return ;
