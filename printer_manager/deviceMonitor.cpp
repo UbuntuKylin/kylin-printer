@@ -392,7 +392,7 @@ bool DeviceMonitor::usbDeivceAdd(const QString &qstr)
         tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
         //TODO: model series 字段删掉
-        newDevice.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+        newDevice.model = tempUri.left(tempUri.indexOf("?"));
         if (newDevice.model.contains(" series")) {
             newDevice.model.remove(" series");
         }
@@ -503,7 +503,7 @@ DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
         tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
         //TODO: model series 字段删掉
-        deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+        deviceInfo.model = tempUri.left(tempUri.indexOf("?"));
         if (deviceInfo.model.contains(" series")) {
             deviceInfo.model.remove(" series");
         }
@@ -520,7 +520,7 @@ DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
         deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
         tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
         tempUri = tempUri.left(tempUri.indexOf("."));
-        deviceInfo.model = tempUri.split(" ");
+        deviceInfo.model = tempUri;
         if (deviceInfo.model.contains(" series")) {
             deviceInfo.model.remove(" series");
         }
@@ -598,7 +598,7 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
             tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
             //TODO: model series 字段删掉
-            deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+            deviceInfo.model = tempUri.left(tempUri.indexOf("?"));
             if (deviceInfo.model.contains(" series")) {
                 deviceInfo.model.remove(" series");
             }
@@ -615,7 +615,7 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
             deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
             tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
             tempUri = tempUri.left(tempUri.indexOf("."));
-            deviceInfo.model = tempUri.split(" ");
+            deviceInfo.model = tempUri;
             if (deviceInfo.model.contains(" series")) {
                 deviceInfo.model.remove(" series");
             }
