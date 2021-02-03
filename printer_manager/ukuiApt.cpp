@@ -1,11 +1,8 @@
 #include <QDebug>
+#include <QProcess>
 #include <QFileInfo>
+#include <QtDBus>
 #include "ukuiApt.h"
-
-
-static void dgbPrintPackage(QApt::DebFile *debFile)
-{
-}
 
 bool ukuiApt::initial()
 {
@@ -30,28 +27,23 @@ bool ukuiApt::initial()
     return true;
 }
 
-ukuiApt::ukuiApt(/* args */) : m_backend(nullptr),
-                               m_debFile(nullptr),
-                               m_trans(nullptr)
-{
-
-    if (initial() == false)
-        return;
-}
-
 ukuiApt::ukuiApt(QString debName) : m_backend(nullptr),
                                     m_debFile(nullptr),
-                                    m_trans(nullptr)
+                                    m_trans(nullptr),
+                                    m_initSucceed(false)
 {
+    if (setDebName(debName) ==false)
+        return ;
 
     if (initial() == false)
         return;
-
-    setDebName(debName);
+    
+    m_initSucceed = true;
 }
 
 ukuiApt::~ukuiApt()
 {
+    qDebug() << "~ukuiApt()";
     if (m_debFile != nullptr)
         delete m_debFile;
 
@@ -62,13 +54,43 @@ ukuiApt::~ukuiApt()
         delete m_trans;
 }
 
+void ukuiApt::checkDebianPackageValid(QString packageName,QString &outMsg,QString &errMsg)
+{
+    QProcess p;
+    QString cmd = QString("dpkg-deb -W %1").arg(packageName);
+    p.start("bash",QStringList()<<"-c" <<cmd);
+    p.waitForFinished();
+    outMsg = p.readAllStandardOutput();
+    errMsg = p.readAllStandardError();
+    qDebug()<<"Cmd:"<<cmd;
+    qDebug()<<"Result"<<outMsg<<" Error:"<<errMsg;
+}
+
 bool ukuiApt::setDebName(QString debName)
 {
+    QString errMsg="";
+    QString outMsg="";
+    checkDebianPackageValid(debName,outMsg,errMsg);
+    if (errMsg.compare("")!=0)
+    {
+        return false;
+    }
     QFileInfo fi(debName);
     if (m_debFile == nullptr)
     {
         m_debFile = new QApt::DebFile(fi.absoluteFilePath());
+    }else{
+        qDebug() << "m_debFile is not null";
     }
+    
+    if (!m_debFile->isValid())
+    {
+        qDebug()<< "Package " << debName << " is not valid.";
+        delete m_debFile;
+        m_debFile = nullptr;
+        return false;
+    }
+    
     return true;
 }
 //install dependencies
@@ -79,7 +101,8 @@ bool ukuiApt::preInstall()
 
 bool ukuiApt::install()
 {
-    if (!m_debFile->isValid()) {
+    if(m_initSucceed == false){
+        qDebug() << "failed to initial apt...";
         return false;
     }
     QString name = m_debFile->packageName();
@@ -123,7 +146,7 @@ bool ukuiApt::install()
         qDebug() << "Package:" << m_debFile->packageName() << " is already installed.";
 
         emit alreadyInstallSignal();
-        return false;
+        return true;
     }
     return true;
 }
@@ -178,4 +201,28 @@ void ukuiApt::onFinished(QApt::ExitStatus exitStatus)
 {
     qDebug() << "onFinished";
     emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_SUCCESS);
+}
+
+void PrinterUtility::installPackage(QString packageName)
+{
+    qDebug() << "Package:" << packageName;
+    qDebug() << "installPackage 1:";
+    QDBusConnection bus = QDBusConnection::systemBus();
+    QDBusInterface dbus_iface("cn.kylinos.KylinUpdateManager", "/cn/kylinos/KylinUpdateManager",
+                              "cn.kylinos.KylinUpdateManager", bus);
+
+    qDebug() << dbus_iface.call("install_and_upgrade", packageName);
+    //dbus_iface.call("exit");
+}
+
+void PrinterUtility::installLocalDeb(QString debFilePath)
+{
+    qDebug() << "Package:" << debFilePath;
+    qDebug() << "installLocalDeb 2:";
+    QDBusConnection bus = QDBusConnection::systemBus();
+    QDBusInterface dbus_iface("cn.kylinos.KylinUpdateManager", "/cn/kylinos/KylinUpdateManager",
+                              "cn.kylinos.KylinUpdateManager", bus);
+
+    qDebug() << dbus_iface.call("install_debfile", debFilePath);
+    //dbus_iface.call("exit");
 }

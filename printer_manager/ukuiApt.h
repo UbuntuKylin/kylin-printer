@@ -32,11 +32,8 @@ class ukuiApt : public QObject
 {
     Q_OBJECT
 public:
-    ukuiApt();
     explicit ukuiApt(QString debName);
     ~ukuiApt();
-
-
 
     //Apt
     bool isPackageInSourceList(QString pkgName);
@@ -66,7 +63,8 @@ private:
 
 private:
     bool initial();
-
+    void checkDebianPackageValid(QString packageName,QString &outMsg,QString &errMsg);
+    bool m_initSucceed;
 Q_SIGNALS:
     void reportInstallStatus(ukuiInstallStatus status);
     void alreadyInstallSignal();                            //发送已经安装的信号
@@ -77,4 +75,19 @@ private Q_SLOTS:
     void onProgressChanged(int progress);
     void onFinished(QApt::ExitStatus exitStatus);
 };
+
+//Add install local package and remote package with DBus KylinUpdateManager
+class PrinterUtility
+{
+public:
+    PrinterUtility() {}
+    ~PrinterUtility() {}
+    //bool getDebNames(struct PrinterInfo printer, QStringList &debNames);
+    void installPackage(QString packageName);
+    void installLocalDeb(QString debFilePath);
+
+};
+
+
+
 #endif //__UKUI_APT_H__
