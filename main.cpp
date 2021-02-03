@@ -11,6 +11,12 @@
 #include <QDateTime>
 #include <sys/inotify.h>
 
+#include <QLocale>
+#include <QStandardPaths>
+#include <QLibraryInfo>
+#include <QDir>
+
+
 #include "popwindow.h"
 #include "deviceMonitor.h"
 
@@ -90,6 +96,8 @@ int main(int argc, char *argv[])
         syslog(LOG_ERR, "Can't lock single file, kylin-printer is already running!");
         exit(0);
     }
+
+
     PopWindow popWid;
 //qDebug()<<DeviceMonitor::getAllPrinterConnected();
     return app.exec();
