@@ -20,6 +20,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+
+#include "mylabel.h"
 #include "ukuiApt.h"
 #include "ukuiPrinter.h"
 
@@ -37,10 +39,16 @@ public:
 
     QLabel *Namelb;//名称
     QLineEdit *printerName;//打印机名称
+    QWidget *mainWid;//主Wid
+
+    QLineEdit *driverlocalation;//驱动位置
+
+
 private:
 
+    int WIDTH = 620;
+    int HEIGHT = 660;
 
-    QWidget *mainWid;//主Wid
     QVBoxLayout *mainLayout;//主布局
     QWidget *titleWid;//标题栏Wid
     QHBoxLayout *titleLayout;//标题栏布局
@@ -82,7 +90,7 @@ private:
     //打印机名称在public中
 
     QLabel *locationlb;//位置
-    QLineEdit *driverlocalation;//驱动位置
+
     QLabel *ppdlb;//pdd文件
     QLineEdit *ppd;//pdd文件名
     QComboBox *dropDownList;//下拉框存ppd
@@ -94,6 +102,8 @@ private:
 
     ukuiUsbPrinter m_printer;
 
+    QValidator *validator;
+
     void initManualControls();
     void setManualControls();
     void initManualWindow();
@@ -101,10 +111,13 @@ private:
 
     void displayInstalling();//显示正在安装的图片
 
+    void dropDebInstall(QString localPath);//放手手安装deb包
+
 protected:
 
+    bool eventFilter(QObject *watched, QEvent *event);
     void dropEvent(QDropEvent *);//放手手
-    void dragEnterEvent(QDragEnterEvent *event);//拖拽
+    void keyPressEvent(QKeyEvent  *event);
 
 signals:
     void updatePpdList();

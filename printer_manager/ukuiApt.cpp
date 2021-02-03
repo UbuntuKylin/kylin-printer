@@ -75,6 +75,9 @@ bool ukuiApt::preInstall()
 
 bool ukuiApt::install()
 {
+    if (!m_debFile->isValid()) {
+        return false;
+    }
     QString name = m_debFile->packageName();
     qDebug() << "Package Name:" << name;
     QApt::Package *pkg = m_backend->package(m_debFile->packageName());

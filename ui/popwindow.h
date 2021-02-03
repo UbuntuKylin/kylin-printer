@@ -28,8 +28,9 @@ public:
     explicit PopWindow(QWidget *parent = nullptr);
 
     static PopWindow *popMutual;
-private:
     ManualInstallWindow *manual; //手动安装驱动界面
+private:
+
     DeviceInformation printer;
     SuccedFailWindow *succeed_fail;
     PropertyWindow *property;
@@ -84,6 +85,7 @@ private:
     void setPopWindow();                       //设置PopWindow布局
     void loadingPicDisplay();                  //加载图标动态显示
 
+    void coldBoot(DeviceInformation test);                           //冷启动
 //    QString m_vendor;
 //    QString m_product;
 //    QString m_uri;
@@ -134,7 +136,7 @@ private slots:
 
     void showManualWindow();                  //显示手动安装
     void gotAllHandledPPDs(myMap);
-    void matchResultSlot(resultMap res);
+    void matchResultSlot(resultPair res);
     void prematchResultSlot();
 
 

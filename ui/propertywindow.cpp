@@ -1,19 +1,35 @@
 #include "propertywindow.h"
+#include "popwindow.h"
+#include "xatom-helper.h"
 
 PropertyWindow::PropertyWindow(QWidget *parent) : QMainWindow(parent)
 {
 
     int WIDTH = 599;
     int HEIGHT = 580;
-    this->setFixedSize(WIDTH, HEIGHT);
+//    this->setFixedSize(WIDTH, HEIGHT);
     setWindowTitle(tr("打印机驱动"));
-    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
-    QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
-    move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
+//    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+//    QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
+//    move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
 
 
     initWindow();
     setWindow();
+
+    MotifWmHints hints;
+    hints.flags = MWM_HINTS_FUNCTIONS|MWM_HINTS_DECORATIONS;
+    hints.functions = MWM_FUNC_ALL;
+    hints.decorations = MWM_DECOR_BORDER;
+    XAtomHelper::getInstance()->setWindowMotifHint(mainWid->winId(), hints);
+
+    QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
+    mainWid -> move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
+
+    mainWid -> setFixedSize(WIDTH,HEIGHT);
+    mainWid -> setAttribute(Qt::WA_ShowModal,true);//模态窗口
+    mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+
 }
 
 void PropertyWindow::initWindow()
@@ -46,7 +62,7 @@ void PropertyWindow::initWindow()
     nameWid = new QWidget;
     locationWid = new QWidget;
     driverWid = new QWidget;
-    connect(closeBtn,&QToolButton::clicked,this,&PropertyWindow::close);
+    connect(closeBtn,&QToolButton::clicked,mainWid,&PropertyWindow::hide);
 //    connect(printTestBtn,&QPushButton::clicked,this,&SuccedFailWindow::printSlot);
 
 }
@@ -85,7 +101,8 @@ void PropertyWindow::setWindow()
     titleLayout->addWidget(titleLabel);
     titleLayout->addStretch();
     titleLayout->addWidget(closeBtn);
-    titleLayout->setContentsMargins(8, 8, 8, 0);
+    titleLayout->setContentsMargins(0, 0, 0, 0);
+    titleLayout->setSpacing(4);
     titleWid->setLayout(titleLayout);
     titleWid->setFixedHeight(40);
 
@@ -115,14 +132,15 @@ void PropertyWindow::setWindow()
 
     mainLayout->addWidget(titleWid);
     mainLayout->addWidget(centerWid);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(4, 0, 4, 4);
+    mainLayout->setSpacing(0);
     mainWid->setLayout(mainLayout);
 
-    mainWid->setObjectName("mainWid");
-    mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);border-radius:6px ;background-color:#FFFFFF;}"); //主窗体圆角
-    this->setWindowFlags((Qt::FramelessWindowHint));                                                                    //设置窗体无边框**加窗管协议后要将此注释调**
-    this->setAttribute(Qt::WA_TranslucentBackground);                                                                   //主窗体透明
-    this->setCentralWidget(mainWid);
+//    mainWid->setObjectName("mainWid");
+//    mainWid->setStyleSheet("#mainWid{border:1px solid rgba(0,0,0,0.15);border-radius:6px ;background-color:#FFFFFF;}"); //主窗体圆角
+//    this->setWindowFlags((Qt::FramelessWindowHint));                                                                    //设置窗体无边框**加窗管协议后要将此注释调**
+//    this->setAttribute(Qt::WA_TranslucentBackground);                                                                   //主窗体透明
+//    this->setCentralWidget(mainWid);
 
 
 
@@ -131,9 +149,9 @@ void PropertyWindow::setWindow()
 void PropertyWindow::displayDevice(QString deviceName,QString ppdName)
 {
     nameLineEdit->setText(deviceName);
-    locationLineEdit->setText("Office");
+    locationLineEdit->setText(PopWindow::popMutual->manual->driverlocalation->text());
     ppdLineEdit->setText(ppdName);
     qDebug()<<deviceName<<"************"<<ppdName;
-    show();
+    mainWid->show();
 
 }
