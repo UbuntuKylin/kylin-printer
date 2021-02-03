@@ -391,10 +391,14 @@ bool DeviceMonitor::usbDeivceAdd(const QString &qstr)
         newDevice.vendor = tempUri.left(tempUri.indexOf("/"));
         tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
-        //TODO: model带空格 只取第一个
-        newDevice.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+        //TODO: model series 字段删掉
+        newDevice.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+        if (newDevice.model.contains(" series")) {
+            newDevice.model.remove(" series");
+        }
+        
         tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
-        tempUri.remove("serial=");                
+        tempUri.remove("serial=");
         newDevice.serial = tempUri;
     }
     this->m_mpDeviceInformationMap.insert(path, newDevice);
@@ -498,8 +502,12 @@ DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
         deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
         tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
-        //TODO: model带空格 只取第一个
-        deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+        //TODO: model series 字段删掉
+        deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+        if (deviceInfo.model.contains(" series")) {
+            deviceInfo.model.remove(" series");
+        }
+
         tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
         tempUri.remove("serial=");
         if (tempUri.contains("&"))
@@ -512,7 +520,10 @@ DeviceInformation getDeviceInformationFromDest(cups_dest_t *dest)
         deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
         tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
         tempUri = tempUri.left(tempUri.indexOf("."));
-        deviceInfo.model = tempUri.split(" ").at(0);
+        deviceInfo.model = tempUri.split(" ");
+        if (deviceInfo.model.contains(" series")) {
+            deviceInfo.model.remove(" series");
+        }
     }
     return deviceInfo;
 }
@@ -586,8 +597,12 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
             deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
             tempUri.remove( tempUri.left( tempUri.indexOf("/") + 1 ) );
 
-            //TODO: model带空格 只取第一个
-            deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ").at(0);
+            //TODO: model series 字段删掉
+            deviceInfo.model = tempUri.left(tempUri.indexOf("?")).split(" ");
+            if (deviceInfo.model.contains(" series")) {
+                deviceInfo.model.remove(" series");
+            }
+
             tempUri.remove( tempUri.left( tempUri.indexOf("?") + 1 ) );
             tempUri.remove("serial=");
             if (tempUri.contains("&"))
@@ -600,7 +615,10 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
             deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
             tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
             tempUri = tempUri.left(tempUri.indexOf("."));
-            deviceInfo.model = tempUri.split(" ").at(0);
+            deviceInfo.model = tempUri.split(" ");
+            if (deviceInfo.model.contains(" series")) {
+                deviceInfo.model.remove(" series");
+            }
         }
         res.append(deviceInfo);
     }
