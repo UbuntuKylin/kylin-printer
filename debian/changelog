@@ -1,3 +1,26 @@
+kylin-printer (1.0.7kord~rc3) v101; urgency=medium
+
+  * 修复bug#36525：手动安装界面更改打印机位置，安装成功后查看设备，位置仍显示Office
+  * 修复bug#33568：安装成功弹窗界面显示异常
+  * 修复bug#33555：安装失败界面显示异常
+  * 修复bug#33389：已安装过的打印机拔插之后仍继续安装
+  * 修复bug#33366：打印机驱动安装成功弹窗打印机名称显示不全，且“安装成功”四字没有显示
+  * 修复bug#33349：打印机气泡点击按钮后不消失
+
+ -- baijincheng <baijincheng@kylinos.cn>  Mon, 1 Feb 2021 16:40:00 +0800
+
+kylin-printer (1.0.7kord~rc2) v101; urgency=medium
+
+  * 修改冷启动流程
+
+ -- baijincheng <baijincheng@kylinos.cn>  Thu, 28 Jan 2021 20:16:00 +0800
+
+kylin-printer (1.0.7kord~rc1) v101; urgency=medium
+
+  * 修改冷启动流程
+
+ -- baijincheng <baijincheng@kylinos.cn>  Thu, 28 Jan 2021 19:31:00 +0800
+
 kylin-printer (1.0.6) v101; urgency=medium
 
   * 修复bug#35968：手动安装界面关闭“打印机名称不可为空”的提示后，手动安装界面退出
