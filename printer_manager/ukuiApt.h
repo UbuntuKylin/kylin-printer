@@ -32,11 +32,8 @@ class ukuiApt : public QObject
 {
     Q_OBJECT
 public:
-    ukuiApt();
     explicit ukuiApt(QString debName);
     ~ukuiApt();
-
-
 
     //Apt
     bool isPackageInSourceList(QString pkgName);
@@ -66,7 +63,8 @@ private:
 
 private:
     bool initial();
-
+    void checkDebianPackageValid(QString packageName,QString &outMsg,QString &errMsg);
+    bool m_initSucceed;
 Q_SIGNALS:
     void reportInstallStatus(ukuiInstallStatus status);
     void alreadyInstallSignal();                            //发送已经安装的信号
