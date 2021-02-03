@@ -611,17 +611,15 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
                 deviceInfo.serial = tempUri;
             res.append(deviceInfo);
         }
-        // else if (head == "ipp" || head == "ipps") {
-        //     tempUri.remove("ipp://");
-        //     deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
-        //     tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
-        //     tempUri = tempUri.left(tempUri.indexOf("."));
-        //     deviceInfo.model = tempUri;
-        //     if (deviceInfo.model.contains(" series")) {
-        //         deviceInfo.model.remove(" series");
-        //     }
-        // }
-        
+//        else if (head == "ipp" || head == "ipps") {
+//            tempUri.remove("ipp://");
+//            deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+//            tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
+//            tempUri = tempUri.left(tempUri.indexOf("."));
+//            deviceInfo.model = tempUri.split(" ").at(0);
+//        }
+
+
     }
     return res;
 }
