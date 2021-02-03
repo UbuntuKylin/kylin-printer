@@ -380,8 +380,9 @@ void PopWindow::matchResultSlot(resultPair res)
 
     }
 
+    qDebug()<<"无论是否精准都要输出:"<<popMutual->printerName;
     //更新manual三行信息
-    emit matchSuccessSignal(printer.vendor+"+"+printer.model,"Office",ppdList);//必须带"+"
+    emit matchSuccessSignal(popMutual->printerName,"Office",ppdList);//必须带"+"
 
 }
 

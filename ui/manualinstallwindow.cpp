@@ -566,6 +566,7 @@ void ManualInstallWindow::matchSuccessSlot(QString printerName,QString position,
     }
 
 
+    qDebug()<<"打印机名:"<<printerName;
     dropDownList->clear();
     this->printerName->setText(printerName);
     driverlocalation->setText(position);
@@ -597,6 +598,7 @@ void ManualInstallWindow::manualAddPrinter()
 
     if(isManualInstallSuccess == true)
     {
+
         emit manualAddSignal(printerName->text(),isManualInstallSuccess);
 
     }
