@@ -547,9 +547,9 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
 {   
     QList<DeviceInformation> res;
     QStringList uriList;
-    uriList.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'", "-e", "\'ipp://\'"})
+    uriList.append( getRetFromCommand( QStringList{"lpinfo", "-v", "|" , "grep", "-e", "\'usb://\'"})
                     .remove("direct ")
-                    .remove("network ")
+//                    .remove("network ")
                     .split("\n") 
                   );
 
@@ -594,15 +594,18 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
                 deviceInfo.serial = tempUri.left(tempUri.indexOf("&"));
             else
                 deviceInfo.serial = tempUri;
+
+            res.append(deviceInfo);
         }
-        else if (head == "ipp" || head == "ipps") {
-            tempUri.remove("ipp://");
-            deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
-            tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
-            tempUri = tempUri.left(tempUri.indexOf("."));
-            deviceInfo.model = tempUri.split(" ").at(0);
-        }
-        res.append(deviceInfo);
+//        else if (head == "ipp" || head == "ipps") {
+//            tempUri.remove("ipp://");
+//            deviceInfo.vendor = tempUri.left(tempUri.indexOf("/"));
+//            tempUri.remove( tempUri.left(tempUri.indexOf("/") + 1) );
+//            tempUri = tempUri.left(tempUri.indexOf("."));
+//            deviceInfo.model = tempUri.split(" ").at(0);
+//        }
+
+
     }
     return res;
 }

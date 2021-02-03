@@ -33,6 +33,8 @@ private:
     QWidget *mainWid;
     QWidget *titleWid;
     QWidget *centerWid;
+    QWidget *printerNameWid;//打印机名的Wid
+    QWidget *messageWid;//成功与否的信息行
     QWidget *bottom_1Wid;//安装成功时的按钮组Wid
     QWidget *bottom_2Wid;//安装失败时的按钮组Wid
 
@@ -40,13 +42,15 @@ private:
     QVBoxLayout *mainLayout;
     QHBoxLayout *titleLayout;
     QVBoxLayout *centerLayout;
+    QHBoxLayout *printerNameLayout;//打印机名布局
+    QHBoxLayout *messageLayout;//成功与否的信息布局
     QHBoxLayout *bottom_1Layout;//安装成功时的按钮组Layout
     QHBoxLayout *bottom_2Layout;//安装失败时的按钮组Layout
 
     QLabel *titleLabel;
     QToolButton *closeBtn;
     QPushButton *picBtn;//对号与叉子图标
-    QLabel *printerName;//打印机名称
+    MyLabel *printerName;//打印机名称
     QLineEdit *messageLineEdit;//消息
 
     QPushButton *viewDeviceBtn;//查看设备

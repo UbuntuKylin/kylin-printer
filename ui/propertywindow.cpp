@@ -1,5 +1,5 @@
 #include "propertywindow.h"
-
+#include "popwindow.h"
 #include "xatom-helper.h"
 
 PropertyWindow::PropertyWindow(QWidget *parent) : QMainWindow(parent)
@@ -149,7 +149,7 @@ void PropertyWindow::setWindow()
 void PropertyWindow::displayDevice(QString deviceName,QString ppdName)
 {
     nameLineEdit->setText(deviceName);
-    locationLineEdit->setText("Office");
+    locationLineEdit->setText(PopWindow::popMutual->manual->driverlocalation->text());
     ppdLineEdit->setText(ppdName);
     qDebug()<<deviceName<<"************"<<ppdName;
     mainWid->show();

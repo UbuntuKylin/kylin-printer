@@ -25,9 +25,9 @@ Homepage: https://github.com/ubuntukylin/kylin-printer
 
 Package: kylin-printer
 Architecture: any
-Depends: libqapt3,
-		 libcups2,
-		 libqapt3-runtime,
-         ${shlibs:Depends}, 
-         ${misc:Depends}
+Depends:libqapt3,
+        libcups2,
+        libqapt3-runtime,
+        ${shlibs:Depends}, 
+        ${misc:Depends}
 Description: kylin-printer

@@ -13,7 +13,7 @@ PopWindow::PopWindow(QWidget *parent)
     popMutual = this;
 
     setWindowTitle(tr("打印机"));
-//    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     //    move((screen->geometry().width() - WIDTH) /2,(screen->geometry().height() - HEIGHT) / 2);
     initControls();                                           //初始化控件
     initPopWindow();                                          //初始化弹窗
@@ -126,6 +126,7 @@ PopWindow::PopWindow(QWidget *parent)
     connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
 
     QList<DeviceInformation> res = DeviceMonitor::getAllPrinterConnected();
+
     for(int j = 0;j< res.count(); j++)
     {
         coldBoot(res.at(j));
@@ -137,7 +138,6 @@ PopWindow::PopWindow(QWidget *parent)
 
 void PopWindow::coldBoot(DeviceInformation test)
 {
-    qDebug()<<"********************"<<test.uri;
 
     QList<DeviceInformation> res;
     res = DeviceMonitor::getAllPrinterWithPDD(true);
@@ -145,8 +145,10 @@ void PopWindow::coldBoot(DeviceInformation test)
     {
         if(test.uri == res.at(i).uri)
         {
-            qDebug()<<"找到了2"<<test.uri;
-            qDebug()<<test<<res.at(i);
+            qDebug()<<"找到了2不弹安装过程!"<<test.uri;
+            QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机已经安装过!"),QMessageBox::Yes);
+            msg->button(QMessageBox::Yes)->setText(tr("确认"));
+            msg->exec();
             return ;
         }
     }
@@ -492,6 +494,7 @@ void PopWindow::print()
     const QString testFileName = "/usr/share/cups/data/default-testpage.pdf";
     bool res = false;
     res = ukuiPrinter::getInstance().printTestPage(m_printer.name,testFileName.toStdString());
+    mainWid->hide();//点击了打印测试页就要隐藏气泡弹窗
     qInfo() << "======================打印测试页结果为================";
     qInfo() << m_printer.name.c_str();
     qInfo() << res;
@@ -523,6 +526,6 @@ void PopWindow::deviceNameSlot()
 {
 
     qDebug()<<"打印机名称:"<<manual->printerName->text().replace("+"," ");
-
+    mainWid->hide();//点击查看设备要隐藏气泡
     emit printerNameSignal(manual->printerName->text().replace("+"," "),m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
 }
