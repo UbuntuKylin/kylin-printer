@@ -121,15 +121,15 @@ PopWindow::PopWindow(QWidget *parent)
     connect(deviceViewBtn,&QPushButton::clicked,this,&PopWindow::deviceNameSlot);
     connect(this,&PopWindow::printerNameSignal,property,&PropertyWindow::displayDevice);//查看设备
 
-//    connect(this,&PopWindow::basicParameter,manual,&ManualInstallWindow:);
-
     connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
+
+    connect(this,&PopWindow::coldBootSignal,this,&PopWindow::coldBoot);
 
     QList<DeviceInformation> res = DeviceMonitor::getAllPrinterConnected();
 
     for(int j = 0;j< res.count(); j++)
     {
-        coldBoot(res.at(j));
+        emit coldBootSignal(res.at(j));
     }
 
 //    connect(succeed_fail,&SuccedFailWindow::printTestSignal,this,&PopWindow::print);
@@ -146,9 +146,7 @@ void PopWindow::coldBoot(DeviceInformation test)
         if(test.uri == res.at(i).uri)
         {
             qDebug()<<"找到了2不弹安装过程!"<<test.uri;
-            QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机已经安装过!"),QMessageBox::Yes);
-            msg->button(QMessageBox::Yes)->setText(tr("确认"));
-            msg->exec();
+            isInstallPop();
             return ;
         }
     }
@@ -156,6 +154,15 @@ void PopWindow::coldBoot(DeviceInformation test)
     emit monitorDriver(test, true); //两个参数:1.打印机信息2.是否安装成功；测试时直接改变true或false就可以
 
     qDebug()<<"end monitorDriver";
+}
+
+void PopWindow::isInstallPop()
+{
+    QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机已经安装过!"),QMessageBox::Yes);
+    msg->button(QMessageBox::Yes)->setText(tr("确认"));
+    msg->exec();
+    qDebug()<<"1:"<<QThread::currentThreadId();
+    msg->deleteLater();
 }
 
 //初始化气泡内控件
@@ -230,7 +237,8 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     picButton->setStyleSheet("border-radius:4px;");
     isMonitorEdit->setFixedSize(300, 30);
     isMonitorEdit->setFocusPolicy(Qt::NoFocus);
-    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + " " + printerDevice.model);
+    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + "+" + printerDevice.model);
+    printerName = printerDevice.vendor + "+" + printerDevice.model;
     isMonitorEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
 
     //加载图标、安装中...
@@ -340,10 +348,11 @@ void PopWindow::matchResultSlot(resultPair res)
         isExact = res.second;
         qDebug() << "有精准匹配的PPD！";
         qDebug() << "PPD名字是" << res.first.first();
-
-        qDebug() << "精准:" << printer.uri << res.first.first() << printer.vendor;
+        ppdList.clear();
+        ppdList = res.first.first();
+        qDebug()<<"PPDList:"<<ppdList;
+        qDebug()<< "精准:" << printer.uri << res.first.first() << printer.vendor;
         m_printer.ppdName = res.first.first().at(0).toStdString();
-        //emit result(res.)//发送给鑫哥,鑫哥返回一个是否安装成功
         searchResult = 1;
 
     }
@@ -524,8 +533,23 @@ void PopWindow::prematchResultSlot()
 
 void PopWindow::deviceNameSlot()
 {
+    bool ret = ukuiPrinter::getInstance().addPrinter(
+                m_printer.uri,
+                m_printer.name,
+                m_printer.ppdName,
+                "");
+    if(ret)
+    {
+        qDebug()<<"精准匹配成功时显示气泡界面打印机名称:"<<printerName;
+        emit printerNameSignal(printerName,m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
+        mainWid->hide();//点击查看设备要隐藏气泡
+    }
+    else
+    {
+        qDebug()<<"非精准匹配时，显示手动安装界面的打印机名称:"<<manual->printerName->text();
+        emit printerNameSignal(manual->printerName->text(),m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
+        mainWid->hide();//点击查看设备要隐藏气泡
+    }
 
-    qDebug()<<"打印机名称:"<<manual->printerName->text().replace("+"," ");
-    mainWid->hide();//点击查看设备要隐藏气泡
-    emit printerNameSignal(manual->printerName->text().replace("+"," "),m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
+
 }

@@ -85,10 +85,7 @@ private:
     void setPopWindow();                       //设置PopWindow布局
     void loadingPicDisplay();                  //加载图标动态显示
 
-    void coldBoot(DeviceInformation test);                           //冷启动
-//    QString m_vendor;
-//    QString m_product;
-//    QString m_uri;
+
 
     QStringList ppdList;                       //ppd列表
     bool isExact = false;                      //精准或模糊
@@ -114,10 +111,13 @@ private:
     QMap<QString, QMap<QString, PPDsAndAttr>> originData = {}; //QMap<厂商名，QMap<型号，PPDS属性数据结构>>的原始数据
     /***********************链接CUPS查找PPDS部分用的**************************/
     QString name;
+    QString printerName;
 
+    void isInstallPop();
 
 signals:
 
+    void coldBootSignal(DeviceInformation test);
     void monitorDriver(DeviceInformation, bool);
     void printSignal(QStringList); //打印信号携带ppd文件信息
 
@@ -132,6 +132,7 @@ signals:
     void printerNameSignal(QString printerName,QString ppdName);
 private slots:
 
+    void coldBoot(DeviceInformation test);                           //冷启动
     void popDisplay(DeviceInformation, bool); //弹窗显示
 
     void showManualWindow();                  //显示手动安装

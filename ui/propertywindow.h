@@ -12,8 +12,10 @@
 #include <QToolButton>
 #include <QLineEdit>
 #include <QLabel>
+#include <QTimer>
+#include <QMessageBox>
 
-
+#include "ukuiPrinter.h"
 
 class PropertyWindow : public QMainWindow
 {
@@ -22,7 +24,8 @@ public:
     explicit PropertyWindow(QWidget *parent = nullptr);
 private:
 
-
+    QMessageBox *Msg;
+    QTimer *tipsTimer;
 
     QWidget *mainWid;
     QWidget *titleWid;
@@ -31,11 +34,9 @@ private:
     QHBoxLayout *titleLayout;
     QVBoxLayout *centerLayout;
 
-
-
     QLabel *titleLabel;
     QToolButton *closeBtn;//关闭按钮
-    QPushButton *printTestBtn;
+    QPushButton *printTestBtn;//打印测试页
 
     QPushButton *picBtn;//图标
     QPushButton *bigPic;//大图标
@@ -47,14 +48,17 @@ private:
     QLabel *printerPPD;//打印机ppd标签
     QLineEdit *ppdLineEdit;//ppd
 
+
     QHBoxLayout *bigPicLayout;
     QHBoxLayout *nameLayout;
     QHBoxLayout *locationLayout;
     QHBoxLayout *driverLayout;
+    QHBoxLayout *printTestLayout;
     QWidget *bigPicWid;
     QWidget *nameWid;
     QWidget *locationWid;
     QWidget *driverWid;
+    QWidget *printTestWid;
 
 
     void initWindow();
@@ -64,6 +68,8 @@ signals:
 
 public slots:
     void displayDevice(QString deviceName,QString ppdName);
+    void printTestSlot();
+    void timeOutSlot();
 
 };
 

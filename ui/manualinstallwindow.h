@@ -113,6 +113,8 @@ private:
 
     void dropDebInstall(QString localPath);//放手手安装deb包
 
+    void inputDisplay();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);
