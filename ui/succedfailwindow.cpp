@@ -25,7 +25,7 @@ SuccedFailWindow::SuccedFailWindow(QWidget *parent) : QMainWindow(parent)
 
     mainWid -> setFixedSize(WIDTH,HEIGHT);
 //    mainWid -> setAttribute(Qt::WA_ShowModal,true);//模态窗口
-    mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    mainWid -> setWindowIcon(QIcon::fromTheme("kylin-printer",QIcon(":/svg/printer_logo.svg")));
     mainWid -> setWindowTitle(tr("打印机驱动"));
 
 
@@ -182,7 +182,7 @@ void SuccedFailWindow::onShowSucceedFailWindow(QString printer,bool isSuccess)
 void SuccedFailWindow::timeOutSlot()
 {
     //打印测试页时5秒后关闭弹窗
-    Msg->close();
+    Msg->hide();
     isPrintTimer->stop();
 }
 

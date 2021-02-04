@@ -104,7 +104,6 @@ int main(int argc, char *argv[])
     else {
         trans_path = qApp->applicationDirPath() + "/translations";
     }
-    QTranslator app_trans;
     QTranslator qt_trans;
     QString locale = QLocale::system().name();
     QString qt_trans_path;

@@ -12,8 +12,11 @@ PopWindow::PopWindow(QWidget *parent)
     int HEIGHT = 188;
     popMutual = this;
 
+    printTimer = new QTimer;
+    connect(printTimer,&QTimer::timeout,this,&PopWindow::timeOutSlot);
+
     setWindowTitle(tr("打印机"));
-    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    setWindowIcon(QIcon::fromTheme("kylin-printer",QIcon(":/svg/printer_logo.svg")));
     //    move((screen->geometry().width() - WIDTH) /2,(screen->geometry().height() - HEIGHT) / 2);
     initControls();                                           //初始化控件
     initPopWindow();                                          //初始化弹窗
@@ -23,12 +26,13 @@ PopWindow::PopWindow(QWidget *parent)
     hints.functions = MWM_FUNC_ALL;
     hints.decorations = MWM_DECOR_BORDER;
     XAtomHelper::getInstance()->setWindowMotifHint(mainWid->winId(), hints);
-
     mainWid ->setFixedSize(WIDTH,HEIGHT);
-    QScreen *screen = QGuiApplication::primaryScreen();
+
+    screen = QGuiApplication::primaryScreen();
     mainWid -> move(screen->geometry().topRight());
     mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     mainWid -> setWindowTitle(tr("打印机"));
+    mainWid->installEventFilter(this);
 
     manual = new ManualInstallWindow;                         //手动安装驱动界面
     succeed_fail = new SuccedFailWindow;
@@ -118,7 +122,7 @@ PopWindow::PopWindow(QWidget *parent)
     connect(this, SIGNAL(signalClickManualButton(QString, QString, QString,QStringList ,bool )),
             manual, SLOT(onShowManualWindow(QString, QString, QString,QStringList ,bool )));
     connect(printTestBtn, &QPushButton::clicked, this, &PopWindow::print); //绑定打印测试页信号
-    connect(deviceViewBtn,&QPushButton::clicked,this,&PopWindow::deviceNameSlot);
+    connect(deviceViewBtn,&QPushButton::clicked,this,&PopWindow::deviceNameSlot);//绑定设备查看信号
     connect(this,&PopWindow::printerNameSignal,property,&PropertyWindow::displayDevice);//查看设备
 
     connect(closeButton, &QPushButton::clicked, mainWid, &PopWindow::hide);
@@ -132,9 +136,46 @@ PopWindow::PopWindow(QWidget *parent)
         emit coldBootSignal(res.at(j));
     }
 
-//    connect(succeed_fail,&SuccedFailWindow::printTestSignal,this,&PopWindow::print);
     //必须在检测插拔的槽函数后执行,先检测是否插拔再执行线程
 }
+
+bool PopWindow::eventFilter(QObject *obj, QEvent *event)   //鼠标滑块点击
+{
+    if(obj == mainWid)
+    {
+//        mainWid->setAttribute(Qt::WA_Moved,false);
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+        if(mouseEvent->button() == Qt::LeftButton)
+        {
+              qDebug()<<"当前鼠标位置:"<<mainWid->mapToParent(mainWid->rect().topLeft()).x()<<"屏幕右上角的位置:"<<screen->geometry().topRight();
+              posAx = mainWid->mapToParent(mouseEvent->pos() - mainWid->pos()).rx();
+              qDebug()<<"窗口位置:"<<posAx;
+//              mainWid->move(mainWid->pos().x(),mainWid->pos().y());
+//              if(mainWid->mapToParent(mainWid->rect().topLeft()).x() <= 0){
+//                  //qDebug()<<this->pos().y();
+//                  mainWid->move(0, mainWid->pos().y());
+//              }
+//              if(mainWid->mapToParent(mainWid->rect().bottomRight()).x() >= mainWid->parentWidget()->rect().width()){
+//                  mainWid->move(mainWid->parentWidget()->rect().width() - mainWid->width(), mainWid->pos().y());
+//              }
+//              if(mainWid->mapToParent(mainWid->rect().topLeft()).y() <= 0){
+//                  mainWid->move(mainWid->pos().x(), 0);
+//              }
+//              if(mainWid->mapToParent(mainWid->rect().bottomRight()).y() >= mainWid->parentWidget()->rect().height()){
+//                  mainWid->move(mainWid->pos().x(), mainWid->parentWidget()->rect().height() - mainWid->height());
+//              }
+
+        }
+    }
+
+    return QWidget::eventFilter(obj,event);
+}
+
+void PopWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    return;
+}
+
 
 void PopWindow::coldBoot(DeviceInformation test)
 {
@@ -501,13 +542,36 @@ void PopWindow::print()
     qDebug() << "StringList的ppd文件";
     //参数为StringList的ppd文件
     //    emit printSignal(QStringList);
-    const QString testFileName = "/usr/share/cups/data/default-testpage.pdf";
+    const QString testFileName = "/usr/share/cups/data/testprint";
     bool res = false;
     res = ukuiPrinter::getInstance().printTestPage(m_printer.name,testFileName.toStdString());
+    if(res)
+    {
+        printTimer->start(5000);
+        Msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机正在启动..."),QMessageBox::Yes);
+        Msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        Msg->exec();
+    }
+    else
+    {
+
+        printTimer->start(5000);
+        Msg = new QMessageBox(QMessageBox::Critical,tr("错误"),tr("打印机启动失败,尝试重新添加打印机再次打开!"),QMessageBox::Yes);
+        Msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        Msg->exec();
+
+    }
     mainWid->hide();//点击了打印测试页就要隐藏气泡弹窗
     qInfo() << "======================打印测试页结果为================";
     qInfo() << m_printer.name.c_str();
     qInfo() << res;
+}
+
+void PopWindow::timeOutSlot()
+{
+    //打印测试页时5秒后关闭弹窗
+    Msg->hide();
+    printTimer->stop();
 }
 
 void PopWindow::showManualWindow()
