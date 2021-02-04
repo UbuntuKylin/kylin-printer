@@ -1,3 +1,9 @@
+kylin-printer (1.0.7kord~rc5) v101; urgency=medium
+
+  * 修复bug#18067：控制面板-系统-开机启动，有程序名需要中文化
+
+ -- baijincheng <baijincheng@kylinos.cn>  Thu, 4 Feb 2021 11:30:00 +0800
+
 kylin-printer (1.0.7kord~rc4) v101; urgency=medium
 
   * 修复bug#33691：添加本地驱动文件选择弹窗UI问题
