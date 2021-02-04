@@ -31,7 +31,7 @@ ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent),
 
     QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
     mainWid -> move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
-    mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    mainWid -> setWindowIcon(QIcon::fromTheme("kylin-printer",QIcon(":/svg/printer_logo.svg")));
     mainWid -> setWindowTitle(tr("手动安装打印机驱动"));
 
     connect(closeBtn,  &QPushButton::clicked, mainWid, &ManualInstallWindow::hide);

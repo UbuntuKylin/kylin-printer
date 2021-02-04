@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QApplication>
-#include <QScreen>
+
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -11,6 +11,11 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QLabel>
+#include <QScreen>
+#include <QPoint>
+#include <QDesktopWidget>			//需要引用此头文件
+#include <QMouseEvent>
+#include <QTimer>
 
 #include "deviceMonitor.h"
 #include "manualinstallwindow.h"
@@ -29,11 +34,23 @@ public:
 
     static PopWindow *popMutual;
     ManualInstallWindow *manual; //手动安装驱动界面
+
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+    void mouseMoveEvent(QMouseEvent *event);
 private:
+
+    int posAx;
+    QScreen *screen ;
 
     DeviceInformation printer;
     SuccedFailWindow *succeed_fail;
     PropertyWindow *property;
+
+    QMessageBox *Msg;
+    QTimer  *printTimer;
 
 
 
@@ -139,6 +156,8 @@ private slots:
     void gotAllHandledPPDs(myMap);
     void matchResultSlot(resultPair res);
     void prematchResultSlot();
+
+    void timeOutSlot();
 
 
 public slots:

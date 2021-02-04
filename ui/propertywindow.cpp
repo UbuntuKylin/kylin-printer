@@ -8,8 +8,7 @@ PropertyWindow::PropertyWindow(QWidget *parent) : QMainWindow(parent)
     int WIDTH = 599;
     int HEIGHT = 580;
 //    this->setFixedSize(WIDTH, HEIGHT);
-    setWindowTitle(tr("打印机驱动"));
-//    setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+
 //    QScreen *screen = QGuiApplication::primaryScreen(); //需要引用2个头文件<QApplication>和<QScreen>
 //    move((screen->geometry().width() - WIDTH) / 2, (screen->geometry().height() - HEIGHT) / 2);
 
@@ -28,7 +27,8 @@ PropertyWindow::PropertyWindow(QWidget *parent) : QMainWindow(parent)
 
     mainWid -> setFixedSize(WIDTH,HEIGHT);
     mainWid -> setAttribute(Qt::WA_ShowModal,true);//模态窗口
-    mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
+    mainWid -> setWindowIcon(QIcon::fromTheme("kylin-printer",QIcon(":/svg/printer_logo.svg")));
+    mainWid -> setWindowTitle(tr("打印机驱动"));
 
 }
 
@@ -196,6 +196,6 @@ void PropertyWindow::printTestSlot()
 void PropertyWindow::timeOutSlot()
 {
     //打印测试页时5秒后关闭弹窗
-    Msg->close();
+    Msg->hide();
     tipsTimer->stop();
 }
