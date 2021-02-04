@@ -34,17 +34,21 @@ PropertyWindow::PropertyWindow(QWidget *parent) : QMainWindow(parent)
 
 void PropertyWindow::initWindow()
 {
+    tipsTimer = new QTimer;
+
     mainWid = new QWidget();
     titleWid = new QWidget();
     centerWid = new QWidget();
     mainLayout = new QVBoxLayout();
     titleLayout = new QHBoxLayout();
     centerLayout = new QVBoxLayout();
+    printTestLayout = new QHBoxLayout();
 
     titleLabel = new QLabel(this);
     closeBtn = new QToolButton(this);//关闭按钮
     picBtn= new QPushButton(this);//图标
     bigPic= new QPushButton(this);//大图标
+    printTestBtn = new QPushButton(this);//打印测试按钮
 
     printerName = new QLabel(this);//打印机名称标签
     nameLineEdit = new QLineEdit(this);//名称
@@ -62,8 +66,10 @@ void PropertyWindow::initWindow()
     nameWid = new QWidget;
     locationWid = new QWidget;
     driverWid = new QWidget;
+    printTestWid = new QWidget;
     connect(closeBtn,&QToolButton::clicked,mainWid,&PropertyWindow::hide);
-//    connect(printTestBtn,&QPushButton::clicked,this,&SuccedFailWindow::printSlot);
+    connect(printTestBtn,&QPushButton::clicked,this,&PropertyWindow::printTestSlot);
+    connect(tipsTimer,&QTimer::timeout,this,&PropertyWindow::timeOutSlot);
 
 }
 
@@ -88,6 +94,8 @@ void PropertyWindow::setWindow()
     printerName->setText(tr("名称"));
     printerLocation->setText(tr("位置"));
     printerPPD->setText(tr("驱动"));
+    printTestBtn->setText("打印测试页");
+    printTestBtn->setFixedSize(120,36);
     nameLineEdit->setFocusPolicy(Qt::NoFocus);
     nameLineEdit->setFixedSize(400,36);
     locationLineEdit->setFocusPolicy(Qt::NoFocus);
@@ -122,11 +130,15 @@ void PropertyWindow::setWindow()
     driverLayout->addWidget(ppdLineEdit);
     driverWid->setLayout(driverLayout);
 
+    printTestLayout->addWidget(printTestBtn);
+    printTestWid->setLayout(printTestLayout);
+
     centerLayout->addStretch();
     centerLayout->addWidget(bigPicWid,0,Qt::AlignCenter);
     centerLayout->addWidget(nameWid,0,Qt::AlignCenter);
     centerLayout->addWidget(locationWid,0,Qt::AlignCenter);
     centerLayout->addWidget(driverWid,0,Qt::AlignCenter);
+    centerLayout->addWidget(printTestWid,0,Qt::AlignCenter);
     centerLayout->addStretch();
     centerWid->setLayout(centerLayout);
 
@@ -153,5 +165,37 @@ void PropertyWindow::displayDevice(QString deviceName,QString ppdName)
     ppdLineEdit->setText(ppdName);
     qDebug()<<deviceName<<"************"<<ppdName;
     mainWid->show();
+}
 
+void PropertyWindow::printTestSlot()
+{
+    const QString testFileName = "/usr/share/cups/data/testprint";
+    bool res = false;
+    res = ukuiPrinter::getInstance().printTestPage(nameLineEdit->text().toStdString(),testFileName.toStdString());
+    qDebug()<<"===================打印测试页====================";
+    qDebug()<<"打印机名称:"<<nameLineEdit->text();
+    qDebug()<<res;
+    if(res)
+    {
+        tipsTimer->start(5000);
+        Msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("打印机正在启动..."),QMessageBox::Yes);
+        Msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        Msg->exec();
+
+
+    }
+    else
+    {
+        tipsTimer->start(5000);
+        Msg = new QMessageBox(QMessageBox::Critical,tr("错误"),tr("打印机启动失败,尝试重新添加打印机再次打开!"),QMessageBox::Yes);
+        Msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        Msg->exec();
+    }
+}
+
+void PropertyWindow::timeOutSlot()
+{
+    //打印测试页时5秒后关闭弹窗
+    Msg->close();
+    tipsTimer->stop();
 }

@@ -135,7 +135,6 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
                     installPic->hide();
 
                     QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("您不能使用非法的deb包!"),QMessageBox::Yes);
-
                     msg->button(QMessageBox::Yes)->setText(tr("确认"));
                     msg->exec();
                     disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
@@ -191,11 +190,7 @@ void ManualInstallWindow::initManualControls()
     //名称行
     Namelb = new QLabel(this);       //名称
     printerName = new QLineEdit(this); //打印机名称
-
-    QRegExp regx("[a-zA-Z0-9\-\\\_]{25}");
-
-    validator = new QRegExpValidator(regx,printerName);
-    printerName->setValidator(validator);
+    connect(printerName,&QLineEdit::textChanged,this,&ManualInstallWindow::inputDisplay);
     //位置行
     locationlb = new QLabel(this);          //位置
     driverlocalation = new QLineEdit(this); //打印机位置
@@ -254,7 +249,7 @@ void ManualInstallWindow::setManualControls()
     //三行lineEdit
     Namelb->setText(tr("名称"));
     printerName->setFixedSize(442, 36);
-    printerName->setText("HP-printer-lasevcP1106");
+    printerName->setText("default-printer-lasevcP1106");
     printerName->setAcceptDrops(false);
 
     locationlb->setText(tr("位置"));
@@ -283,6 +278,25 @@ void ManualInstallWindow::setManualControls()
 //                          "QPushButton:pressed{background-color:#4169E1;color:white;}");
 }
 
+//输入显示
+void ManualInstallWindow::inputDisplay()
+{
+    QString str = printerName->text();
+    qDebug()<<"输入的是:"<<str;
+    if(str != "")
+    {
+        QString temp = str.at(str.length()-1);
+        qDebug()<<"长度:"<<str.length()<<"末尾字符为:"<<temp;
+        if(temp=="#"||temp == "?"||temp == "'"||temp == "\""||temp == "\/"||temp == "\\"||temp == " ")
+        {
+            QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("不能输入非法字符!"),QMessageBox::Yes);
+            msg->button(QMessageBox::Yes)->setText(tr("确认"));
+            msg->exec();
+            printerName->clear();
+        }
+    }
+}
+
 void ManualInstallWindow::addLocalDriverSlot()//系统弹窗的选择deb包
 {
     QString fileName = QFileDialog::getOpenFileName(
@@ -300,30 +314,50 @@ void ManualInstallWindow::addLocalDriverSlot()//系统弹窗的选择deb包
         msg->exec();
         return ;
     }
-    if (m_apt == nullptr)
+    if(!fileName.isEmpty())
     {
-        /* code */
-        m_apt = new ukuiApt(fileName);
-        if (m_apt != nullptr)
+        if (m_apt == nullptr)
         {
-            installPic->show();
-            connect(m_apt, &ukuiApt::reportInstallStatus,
-                    this, &ManualInstallWindow::onPackageInstalled);
-            if(m_apt->install())
+            /* code */
+            m_apt = new ukuiApt(fileName);
+            if (m_apt != nullptr)
             {
-                installingTimer->start(100);
-            }
-            else
-            {
-                installingTimer->stop();
-                installPic->hide();
-                delete m_apt;
-                m_apt = nullptr;
-                disconnect(m_apt, &ukuiApt::reportInstallStatus,this, &ManualInstallWindow::onPackageInstalled);
-            }
-        }
+                installPic->show();
+                connect(m_apt, &ukuiApt::reportInstallStatus,
+                        this, &ManualInstallWindow::onPackageInstalled);
 
+                connect(m_apt,&ukuiApt::alreadyInstallSignal,this,&ManualInstallWindow::alreadyInstallSlot);
+                if(m_apt->install())
+                {
+                    installingTimer->start(100);
+
+                }
+                else
+                {
+                    installingTimer->stop();
+                    installPic->hide();
+
+                    QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("您不能使用非法的deb包!"),QMessageBox::Yes);
+                    msg->button(QMessageBox::Yes)->setText(tr("确认"));
+                    msg->exec();
+                    disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
+                    disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
+                    delete m_apt;
+                    m_apt = nullptr;
+                    return ;
+                }
+
+            }
+
+        }
     }
+    else
+    {
+        QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("路径不能为空!"),QMessageBox::Yes);
+        msg->button(QMessageBox::Yes)->setText(tr("确认"));
+        msg->exec();
+    }
+
 }
 
 void ManualInstallWindow:: alreadyInstallSlot()
@@ -422,7 +456,7 @@ void ManualInstallWindow::setManualWindow()
 //    pddFileWid->setStyleSheet("background-color: #F2F2F2;");
 
     printerName->setReadOnly(false);
-    printerName->setMaxLength(50);
+    printerName->setMaxLength(127);
     driverlocalation->setReadOnly(false);
     driverlocalation->setMaxLength(50);
     ppd->setReadOnly(true);
@@ -479,7 +513,7 @@ void ManualInstallWindow::onShowManualWindow(QString vendor, QString product, QS
 }
 void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
 {
-    //qDebug()<<"onPackageInstalled"<<(int)status;
+    qDebug()<<"onPackageInstalled"<<(int)status;
     switch (status){
         case ukuiInstallStatus::UKUI_INSTALL_START:
         {
@@ -496,7 +530,6 @@ void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
             qDebug()<<"onPackageInstalled "<<"UKUI_INSTALL_SUCCESS";
             emit updatePpdList();
             debSuccess = true;
-            dropDownList->addItem("2");
         }
         break;
         case ukuiInstallStatus::UKUI_INSTALL_FAIL:
@@ -527,9 +560,14 @@ void ManualInstallWindow::matchSuccessSlot(QString printerName,QString position,
         addBtn->setEnabled(true);
 
     }
+    else
+    {
+        qDebug()<<"deb安装失败!";//刚开始没有deb包安装时也会输出此行，不必管他;安装上驱动包之后就不会执行此分支了!!
+    }
 
+
+    qDebug()<<"打印机名:"<<printerName;
     dropDownList->clear();
-
     this->printerName->setText(printerName);
     driverlocalation->setText(position);
     dropDownList->addItems(ppdList);
@@ -560,6 +598,7 @@ void ManualInstallWindow::manualAddPrinter()
 
     if(isManualInstallSuccess == true)
     {
+
         emit manualAddSignal(printerName->text(),isManualInstallSuccess);
 
     }

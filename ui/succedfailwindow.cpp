@@ -11,8 +11,6 @@ SuccedFailWindow::SuccedFailWindow(QWidget *parent) : QMainWindow(parent)
 //    this->setFixedSize(WIDTH, HEIGHT);
 //    this->setAttribute(Qt::WA_ShowModal,true);//模态窗口
 
-
-
     init();
     setWindow();
 

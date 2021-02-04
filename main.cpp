@@ -11,6 +11,13 @@
 #include <QDateTime>
 #include <sys/inotify.h>
 
+#include <QTranslator>
+#include <QLocale>
+#include <QStandardPaths>
+#include <QLibraryInfo>
+#include <QDir>
+
+
 #include "popwindow.h"
 #include "deviceMonitor.h"
 
@@ -90,6 +97,26 @@ int main(int argc, char *argv[])
         syslog(LOG_ERR, "Can't lock single file, kylin-printer is already running!");
         exit(0);
     }
+    QString trans_path;
+    if (QDir("/usr/share/kylin-recorder/translations").exists()) {
+        trans_path = "/usr/share/kylin-recorder/translations";
+    }
+    else {
+        trans_path = qApp->applicationDirPath() + "/translations";
+    }
+    QTranslator app_trans;
+    QTranslator qt_trans;
+    QString locale = QLocale::system().name();
+    QString qt_trans_path;
+    qt_trans_path = QLibraryInfo::location(QLibraryInfo::TranslationsPath);// /usr/share/qt5/translations
+    if (locale == "zh_CN") {
+
+        if(!qt_trans.load("qt_" + locale + ".qm", qt_trans_path))
+            qDebug() << "Load translation file："<< "qt_" + locale + ".qm from" << qt_trans_path << "failed!";
+        else
+            app.installTranslator(&qt_trans);
+    }
+
     PopWindow popWid;
 //qDebug()<<DeviceMonitor::getAllPrinterConnected();
     return app.exec();
