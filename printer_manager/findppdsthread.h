@@ -20,7 +20,7 @@ public:
 };
 Q_DECLARE_METATYPE(PPDsAndAttr)
 
-typedef QMap<QString,QMap<QString,PPDsAndAttr> > myMap;
+typedef QMap<QString,QMap<QString,PPDsAndAttr> > ppdPrinterMap;
 class FindPPDsThread : public QObject
 {
     Q_OBJECT
@@ -28,7 +28,7 @@ public:
     explicit FindPPDsThread(http_t* httpConnection, QObject *parent = nullptr);
 
 signals:
-    void gotAllHandledPPDs(myMap origin);
+    void gotAllHandledPPDs(ppdPrinterMap origin);
 
 
 public slots:

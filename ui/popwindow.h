@@ -109,7 +109,7 @@ private:
 
     QString m_ppdName;
     ukuiUsbPrinter m_printer;
-    myMap mymap;
+    ppdPrinterMap mymap;
     bool canFindPPD = false;
     /***********************链接CUPS查找PPDS部分用的**************************/
     http_t *newHttp = nullptr;
@@ -139,7 +139,7 @@ signals:
     void printSignal(QStringList); //打印信号携带ppd文件信息
 
     void signalFindPPDsThread();                                   //发送开始连接CUPS链接，查找获取已有的PPDS
-    void signalMatchPPDsThread(QString bandName, QString printername,myMap origin, int devicetype); //获取打印机名字，把CUPS链接传回的PPDS一并输入，进行检索
+    void signalMatchPPDsThread(QString bandName, QString printername,ppdPrinterMap origin, int devicetype); //获取打印机名字，把CUPS链接传回的PPDS一并输入，进行检索
     void signalClickManualButton(QString, QString, QString,QStringList ppdList,bool isExact);
     
     void matchSuccessSignal(QString printerName,QString position,QStringList ppdList);
@@ -153,7 +153,7 @@ private slots:
     void popDisplay(DeviceInformation, bool); //弹窗显示
 
     void showManualWindow();                  //显示手动安装
-    void gotAllHandledPPDs(myMap);
+    void gotAllHandledPPDs(ppdPrinterMap);
     void matchResultSlot(resultPair res);
     void prematchResultSlot();
 

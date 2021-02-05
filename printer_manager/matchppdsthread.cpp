@@ -6,10 +6,35 @@ MatchPPDsThread::MatchPPDsThread(QObject *parent) : QObject(parent)
     qDebug() << QString("MatchPPDsThread thread id:") << (QThread::currentThreadId());
 }
 
-void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, myMap data, int type)
+void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, ppdPrinterMap data, int type)
 {
     QMutexLocker lockData( &m_mutex);
     qDebug() << "In initPPDMatch!";
+    if(bandName.isEmpty())
+    {
+        qDebug() << "输入的要查询的厂商名为空！";
+        emit matchFailed();
+        return;
+    }
+    if(printerName.isEmpty())
+    {
+        qDebug() << "输入的要查询的打印机名为空！";
+        emit matchFailed();
+        return;
+    }
+    if(data.isEmpty())
+    {
+        qDebug() << "输入的ppd与printer关系QMap为空！";
+        emit matchFailed();
+        return;
+    }
+    if(type < 0 || type >= NONEPRINTER)
+    {
+        qDebug() << "输入的type类型为非打印机类型！";
+        emit matchFailed();
+        return;
+    }
+
     originData = data;
     QStringList printerNameList = (bandName + ' ' + printerName).split(' ');
     printerBandName = nullptr;
@@ -34,17 +59,25 @@ void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, myMap 
 
         matchResult = exactMatch(printerModelName, mfg, type);
 
-        if(matchResult.first.size())
-        {
-            emit matchResultSignal(matchResult);
-        }
-        else
+        if(matchResult.first.isEmpty())
         {
             qDebug() << printerBandName << "厂商在该机器上已安装的驱动程序中没有能匹配当前打印机型号的驱动";
             auto &mfg = originData["generic"];
             qDebug() << "generic对应的map大小为" << mfg.size();
 
             matchResult = genericMatch(printerModelName, mfg, type);
+            if(matchResult.first.isEmpty())
+            {
+                emit matchFailed();
+            }
+            else
+            {
+                emit matchResultSignal(matchResult);
+            }
+
+        }
+        else
+        {
             emit matchResultSignal(matchResult);
         }
     }
@@ -55,12 +88,40 @@ void MatchPPDsThread::initPPDMatch(QString bandName, QString printerName, myMap 
         qDebug() << "generic对应的map大小为" << mfg.size();
 
         matchResult = genericMatch(printerModelName, mfg, type);
-        emit matchResultSignal(matchResult);
+        if(matchResult.first.isEmpty())
+        {
+            emit matchFailed();
+        }
+        else
+        {
+            emit matchResultSignal(matchResult);
+        }
     }
 }
 
 QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printerModel, QMap<QString, PPDsAndAttr> map, int type)
 {
+    if(!map.size())
+    {
+        qDebug() << "入参map大小为0";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
+    if(printerModel.isEmpty())
+    {
+        qDebug() << "入参printerModel内容为空";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
+    if(type < 0 || type >= NONEPRINTER)
+    {
+        qDebug() << "入参type值非打印机类型值";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
 
     QMap<int, QString> tempPPDs;
     tempPPDs.clear();
@@ -68,7 +129,10 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printe
     QStringList printerModelList = printerModel.split(' ');
     if (printerModelList.size() <= 2)
     {
-        emit matchFailed();
+        qDebug() << "printerModelList值不符合规范";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
     }
     printerModelList.removeAt(0);
 
@@ -196,6 +260,28 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::genericMatch(QString printe
 
 QPair<QMap<int, QStringList>, bool> MatchPPDsThread::exactMatch(QString printerModel, QMap<QString, PPDsAndAttr> map, int type)
 {
+    if(!map.size())
+    {
+        qDebug() << "入参map大小为0";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
+    if(printerModel.isEmpty())
+    {
+        qDebug() << "入参printerModel内容为空";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
+    if(type < 0 || type >= NONEPRINTER)
+    {
+        qDebug() << "入参type值非打印机类型值";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
+    }
+
     exactMatchFlag = false;
     QMap<int, QString> tempPPDs;
     tempPPDs.clear();
@@ -203,7 +289,10 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::exactMatch(QString printerM
     QStringList printerModelList = printerModel.split(' ');
     if (printerModelList.size() <= 2)
     {
-        emit matchFailed();
+        qDebug() << "printerModelList值不符合规范";
+        QMap<int, QStringList> ret;
+        ret.clear();
+        return QPair<QMap<int, QStringList>, bool>(ret, false);
     }
     QString tempPrinterModel = nullptr;
     foreach (auto &letter, printerModel.toLower())

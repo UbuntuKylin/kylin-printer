@@ -24,7 +24,7 @@ signals:
     void matchFailed();
     void matchResultSignal(resultPair res);
 public slots:
-    void initPPDMatch(QString bandName, QString printerName, myMap data, int type);
+    void initPPDMatch(QString bandName, QString printerName, ppdPrinterMap data, int type);
 
 private:
     QMutex m_mutex;
