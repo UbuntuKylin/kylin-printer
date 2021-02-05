@@ -177,11 +177,14 @@ void ukuiApt::onInstallStatusChanged(QApt::TransactionStatus status)
 }
 void ukuiApt::onInstallErrorOccured(QApt::ErrorCode error)
 {
-    qDebug() << "onInstallStatusChanged" << (int)error;
+    qDebug() << "onInstallErrorOccured" << (int)error;
     switch (error)
     {
     case QApt::AuthError:
     case QApt::LockError:
+    {
+        emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_FAIL);
+    }
         break;
     default:
         break;
@@ -199,8 +202,15 @@ void ukuiApt::onProgressChanged(int progress)
 
 void ukuiApt::onFinished(QApt::ExitStatus exitStatus)
 {
-    qDebug() << "onFinished";
-    emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_SUCCESS);
+
+    if(exitStatus == QApt::ExitSuccess) {
+        qDebug() << "onFinished(Success)";
+        emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_SUCCESS);
+    }
+    else {
+        qDebug() << "onFinished(Failed),reason:" << (int)exitStatus;
+        emit reportInstallStatus(ukuiInstallStatus::UKUI_INSTALL_FAIL);
+    }
 }
 
 void PrinterUtility::installPackage(QString packageName)

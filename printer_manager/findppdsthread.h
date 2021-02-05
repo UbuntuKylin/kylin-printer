@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMetaType>
+#include<QMutexLocker>
 #include "cupsconnection4ppds.h"
 
 template <typename>
@@ -35,6 +36,7 @@ public slots:
     //void getPPDsByPrinter(QString printerName);
 
 private:
+    QMutex m_mutex;
     http_t* newHttp = nullptr;
     ipp_t* ppdRequest = nullptr;
     ipp_t* cupsAnswer = nullptr;

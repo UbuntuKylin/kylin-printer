@@ -1,3 +1,11 @@
+kylin-printer (1.0.7kord~rc6) v101; urgency=medium
+
+  * 修复bug#37728：【麒麟打印】连接奔图打印机，右上角麒麟打印服务闪退，终端报段错误
+  * 打开日志，放置于路径/tmp/kylin-printer/log/下的日志文件中
+  * 修复bug#37811：【麒麟打印】手动安装打印机驱动界面本地添加或拖拽其余架构的deb包，授权后没有相关提示
+
+ -- hanzehui <hanzehui@kylinos.cn>  Fri, 5 Feb 2021 13:40:00 +0800
+
 kylin-printer (1.0.7kord~rc5) v101; urgency=medium
 
   * 修复bug#18067：控制面板-系统-开机启动，有程序名需要中文化
@@ -18,8 +26,9 @@ kylin-printer (1.0.7kord~rc3) v101; urgency=medium
   * 修复bug#33389：已安装过的打印机拔插之后仍继续安装
   * 修复bug#33366：打印机驱动安装成功弹窗打印机名称显示不全，且“安装成功”四字没有显示
   * 修复bug#33349：打印机气泡点击按钮后不消失
+  * 修复bug#37728：【麒麟打印】连接奔图打印机，右上角麒麟打印服务闪退，终端报段错误
 
- -- baijincheng <baijincheng@kylinos.cn>  Mon, 1 Feb 2021 16:40:00 +0800
+ -- hanzehui <hanzehui@kylinos.cn>  Thu, 4 Feb 2021 09:40:00 +0800
 
 kylin-printer (1.0.7kord~rc2) v101; urgency=medium
 
