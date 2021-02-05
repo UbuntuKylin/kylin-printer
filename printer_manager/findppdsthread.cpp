@@ -1,12 +1,14 @@
+#include <QThread>
 #include "findppdsthread.h"
 
 FindPPDsThread::FindPPDsThread(http_t* httpConnection, QObject *parent) : QObject(parent),newHttp(httpConnection)
 {
-
+    qDebug() << QString("FindPPDsThread thread id:") << (QThread::currentThreadId());
 }
 
 void FindPPDsThread::initPPDMapConstruct()
 {
+    QMutexLocker lockData( &m_mutex);
     originPPDs = getPPDsFromCUPS();
     qDebug() << "PPDs got!";
     emit gotAllHandledPPDs(originPPDs);

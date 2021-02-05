@@ -85,10 +85,10 @@ PopWindow::PopWindow(QWidget *parent)
 
     connect(pFindPPDs, &QThread::finished, cmdFindPPDs, &QObject::deleteLater); //挂载
     connect(this, &PopWindow::signalFindPPDsThread, cmdFindPPDs, &FindPPDsThread::initPPDMapConstruct);
-    connect(cmdFindPPDs, SIGNAL(gotAllHandledPPDs(myMap)), this, SLOT(gotAllHandledPPDs(myMap))); //获取到所有PPD文件列表的初始map
+    connect(cmdFindPPDs, SIGNAL(gotAllHandledPPDs(ppdPrinterMap)), this, SLOT(gotAllHandledPPDs(ppdPrinterMap))); //获取到所有PPD文件列表的初始map
     connect(manual, SIGNAL(updatePpdList()), this, SLOT(prematchResultSlot()));
 
-    qRegisterMetaType<myMap>("myMap"); //注册自己的类型，必须！！！！！
+    qRegisterMetaType<ppdPrinterMap>("ppdPrinterMap"); //注册自己的类型，必须！！！！！
 
     pFindPPDs->start();
     findTime = new QTimer;
@@ -104,7 +104,7 @@ PopWindow::PopWindow(QWidget *parent)
     cmdMatchPPDs->moveToThread(pFindPPDs);
 
     connect(pMatchPPDs, &QThread::finished, cmdMatchPPDs, &QObject::deleteLater); //挂载
-    connect(this, SIGNAL(signalMatchPPDsThread(QString, QString, myMap, int)), cmdMatchPPDs, SLOT(initPPDMatch(QString, QString, myMap, int)));
+    connect(this, SIGNAL(signalMatchPPDsThread(QString, QString, ppdPrinterMap, int)), cmdMatchPPDs, SLOT(initPPDMatch(QString, QString, ppdPrinterMap, int)));
     connect(cmdMatchPPDs, &MatchPPDsThread::matchFailed, this, [=] { qDebug() << "查询失败！"; }); //直接失败
     connect(cmdMatchPPDs, SIGNAL(matchResultSignal(resultPair)), this, SLOT(matchResultSlot(resultPair)));
 
@@ -373,7 +373,7 @@ void PopWindow::setPopWindow()
 }
 
 //查找PPD列表，找到
-void PopWindow::gotAllHandledPPDs(myMap temp)
+void PopWindow::gotAllHandledPPDs(ppdPrinterMap temp)
 {
     mymap = temp;
     canFindPPD = true;

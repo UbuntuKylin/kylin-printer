@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMetaType>
+#include<QMutexLocker>
 #include "cupsconnection4ppds.h"
 
 template <typename>
@@ -19,7 +20,7 @@ public:
 };
 Q_DECLARE_METATYPE(PPDsAndAttr)
 
-typedef QMap<QString,QMap<QString,PPDsAndAttr> > myMap;
+typedef QMap<QString,QMap<QString,PPDsAndAttr> > ppdPrinterMap;
 class FindPPDsThread : public QObject
 {
     Q_OBJECT
@@ -27,7 +28,7 @@ public:
     explicit FindPPDsThread(http_t* httpConnection, QObject *parent = nullptr);
 
 signals:
-    void gotAllHandledPPDs(myMap origin);
+    void gotAllHandledPPDs(ppdPrinterMap origin);
 
 
 public slots:
@@ -35,6 +36,7 @@ public slots:
     //void getPPDsByPrinter(QString printerName);
 
 private:
+    QMutex m_mutex;
     http_t* newHttp = nullptr;
     ipp_t* ppdRequest = nullptr;
     ipp_t* cupsAnswer = nullptr;
