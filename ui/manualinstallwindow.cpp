@@ -507,7 +507,6 @@ void ManualInstallWindow::onShowManualWindow(QString vendor, QString product, QS
     qDebug() << "Uri:"      << m_uri;
     qDebug() << "isExact??" << m_isExact ;
     printerName->setText(m_vendor + "+" + m_product);
-//    dropDownList->addItems(m_ppdList);
     mainWid->show();
 //    emit manualAddSignal(m_vendor + " " + m_product,false);
 }

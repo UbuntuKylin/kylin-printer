@@ -36,10 +36,10 @@ public:
     ManualInstallWindow *manual; //手动安装驱动界面
 
 
-protected:
+protected :
+
     bool eventFilter(QObject *obj, QEvent *event);
 
-    void mouseMoveEvent(QMouseEvent *event);
 private:
 
     int posAx;
