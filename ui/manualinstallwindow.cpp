@@ -535,6 +535,7 @@ void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
         {
 
             qDebug()<<"onPackageInstalled "<<"UKUI_INSTALL_FAIL";
+            debSuccess = false;
         }
         break;
         default:

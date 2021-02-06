@@ -53,7 +53,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     }
 
     // 设置输出信息格式
-    QString strDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
+    QString strDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd ddd");
     QString strMessage = QString(QString() +
                                  "Message:%1"
                                  // +"        File:%2\n"
@@ -65,7 +65,14 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     // .arg(context.file).arg(context.line).arg(context.function).arg(strDateTime);
 
     // 输出信息至文件中（读写、追加形式）
-    QFile file("log.txt");
+    QString dirPath = "/tmp/kylin-printer/log";
+    QDir dir;
+    QFile file;
+    if (dir.mkpath(dirPath)) {
+        dirPath = dirPath + "/" + strDateTime + ".txt" ;
+        file.setFileName(dirPath);
+    }
+
     file.open(QIODevice::ReadWrite | QIODevice::Append);
     QTextStream stream(&file);
     stream << strMessage << "\r\n";
@@ -82,7 +89,7 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<DeviceInformation>("DeviceInformation");
     qRegisterMetaType<DeviceInformation>("DeviceInformation&");
-    //    qInstallMessageHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
     QApplication app(argc, argv);
     QStringList homePath = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     int fd = open(QString(homePath.at(0) + "/.config/kylin-printer%1.lock").arg(getenv("DISPLAY")).toUtf8().data(),
