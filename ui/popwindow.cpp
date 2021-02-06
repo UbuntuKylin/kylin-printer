@@ -469,7 +469,7 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
                 });
             }
         }
-        mainWid -> move(screen->geometry().topRight());
+        mainWid -> move(screen->geometry().topRight());//插拔时始终在右上角
         mainWid->show();
     }
     else
