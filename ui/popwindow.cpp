@@ -29,7 +29,7 @@ PopWindow::PopWindow(QWidget *parent)
     mainWid ->setFixedSize(WIDTH,HEIGHT);
 
     screen = QGuiApplication::primaryScreen();
-    mainWid -> move(screen->geometry().topRight());
+
     mainWid -> setWindowIcon(QIcon(":/svg/printer_logo.svg"));
     mainWid -> setWindowTitle(tr("打印机"));
     mainWid->installEventFilter(this);
@@ -149,7 +149,7 @@ bool PopWindow::eventFilter(QObject *obj, QEvent *event)   //鼠标滑块点击
         {
               qDebug()<<"当前鼠标位置:"<<mainWid->mapToParent(mainWid->rect().topLeft()).x()<<"屏幕右上角的位置:"<<screen->geometry().topRight();
               posAx = mainWid->mapToParent(mouseEvent->pos() - mainWid->pos()).rx();
-              qDebug()<<"窗口位置:"<<posAx;
+              qDebug()<<"窗口位置:"<<mainWid->rect().topLeft().x();
 //              mainWid->move(mainWid->pos().x(),mainWid->pos().y());
 //              if(mainWid->mapToParent(mainWid->rect().topLeft()).x() <= 0){
 //                  //qDebug()<<this->pos().y();
@@ -170,12 +170,6 @@ bool PopWindow::eventFilter(QObject *obj, QEvent *event)   //鼠标滑块点击
 
     return QWidget::eventFilter(obj,event);
 }
-
-void PopWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    return;
-}
-
 
 void PopWindow::coldBoot(DeviceInformation test)
 {
@@ -475,7 +469,7 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
                 });
             }
         }
-
+        mainWid -> move(screen->geometry().topRight());//插拔时始终在右上角
         mainWid->show();
     }
     else
@@ -572,6 +566,7 @@ void PopWindow::timeOutSlot()
     //打印测试页时5秒后关闭弹窗
     Msg->hide();
     printTimer->stop();
+    Msg->deleteLater();
 }
 
 void PopWindow::showManualWindow()
