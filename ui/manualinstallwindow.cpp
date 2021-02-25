@@ -527,6 +527,9 @@ void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
         case ukuiInstallStatus::UKUI_INSTALL_SUCCESS:
         {
             qDebug()<<"onPackageInstalled "<<"UKUI_INSTALL_SUCCESS";
+            QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("安装成功，重新匹配驱动!"),QMessageBox::Yes);
+            msg->button(QMessageBox::Yes)->setText(tr("确认"));
+            msg->exec();
             emit updatePpdList();
             debSuccess = true;
         }
@@ -536,6 +539,17 @@ void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
 
             qDebug()<<"onPackageInstalled "<<"UKUI_INSTALL_FAIL";
             debSuccess = false;
+            installingTimer->stop();
+            installPic->hide();
+
+            QMessageBox *msg = new QMessageBox(QMessageBox::Warning,tr("警告"),tr("安装失败!"),QMessageBox::Yes);
+            msg->button(QMessageBox::Yes)->setText(tr("确认"));
+            msg->exec();
+            disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
+            disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
+            delete m_apt;
+            m_apt = nullptr;
+            return ;
         }
         break;
         default:
