@@ -1,3 +1,10 @@
+kylin-printer (1.0.7kord~rc9) v101; urgency=medium
+
+  *  BUG  40952 【打印管理】测试机通过USB线接入HP-ColorLaserJet-MFP-M278-M281打印机，查看系统桌面右上角弹窗显示不全，点击打印测试失败
+  *  BUG  41266 【打印管理】测试机接入HP-ColorLaserJet-MFP-M278-M281打印机，系统桌面右上角弹窗一直显示正在安装
+
+ -- hanzehui <hanzehui@kylinos.cn>  Fri, 05 Mar 2021 15:40:00 +0800
+
 kylin-printer (1.0.7kord~rc8) v101; urgency=medium
 
   *  BUG 37811 【麒麟打印】手动安装打印机驱动界面本地添加或拖拽其余架构的deb包，授权后没有相关提示
