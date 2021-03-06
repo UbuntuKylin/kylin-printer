@@ -432,9 +432,8 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
     static int i=0;
     i++;
-    printerDevice.vendor = (printerDevice.vendor).remove(QRegExp("\\s"));
-    printerDevice.uri = (printerDevice.uri).remove(QRegExp("\\s"));
-    printerDevice.model = (printerDevice.model).remove(QRegExp("\\s"));
+    printerDevice.vendor = (printerDevice.vendor).replace(QRegExp("\\s"),"+");//打印机名称和型号中不能有空格，
+    printerDevice.model = (printerDevice.model).replace(QRegExp("\\s"),"+");  //替换为“+”再继续。
     name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();
