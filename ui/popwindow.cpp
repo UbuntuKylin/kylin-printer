@@ -272,7 +272,13 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     picButton->setStyleSheet("border-radius:4px;");
     isMonitorEdit->setFixedSize(300, 30);
     isMonitorEdit->setFocusPolicy(Qt::NoFocus);
-    isMonitorEdit->setText("检测到打印机:" + printerDevice.vendor + "+" + printerDevice.model);
+    QString tempName = printerDevice.vendor + "+" + printerDevice.model;
+    int length = tempName.length();
+    if(length > 23)
+    {
+        tempName = tempName.replace(20,length-20,"...");
+    }
+    isMonitorEdit->setText("检测到打印机:" + tempName);
     printerName = printerDevice.vendor + "+" + printerDevice.model;
     isMonitorEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
 
@@ -426,6 +432,9 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
 {
     static int i=0;
     i++;
+    printerDevice.vendor = (printerDevice.vendor).remove(QRegExp("\\s"));
+    printerDevice.uri = (printerDevice.uri).remove(QRegExp("\\s"));
+    printerDevice.model = (printerDevice.model).remove(QRegExp("\\s"));
     name = printerDevice.vendor + QString("+") + printerDevice.model;
     m_printer.name = name.toStdString();
     m_printer.vendor = printerDevice.vendor.toStdString();

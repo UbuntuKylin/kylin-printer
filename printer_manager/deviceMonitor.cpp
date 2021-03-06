@@ -585,10 +585,11 @@ QList<DeviceInformation> DeviceMonitor::getAllPrinterConnected()
             continue;
         }
         QString tempUri = deviceInfo.uri;
-        if (tempUri.contains("ipp") && tempUri.contains("%20")) {
+        while (tempUri.contains("ipp") && tempUri.contains("%20")) {
             tempUri.replace(tempUri.indexOf("%20"),3, "/");
             // tempUri[tempUri.indexOf("%20")] = "/";
         }
+        printf("%s\n",tempUri.toStdString());
         tempUri = QUrl(tempUri).toString();
         QString head = getUriHead(tempUri);
 
