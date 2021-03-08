@@ -309,78 +309,144 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::exactMatch(QString printerM
 
     QMap<int, QStringList> ret;
     ret.clear();
-    int numOfMatchedPPD = 0;
     int size = tempPrinterModel.size();
-    for (int i = size ; i > 2; i--)
+    QStringList tempMakeAndModel = {};
+
+
+    QMap<QString, PPDsAndAttr>::iterator iter = map.begin();
+    QString iterList[4] = {};
+
+    int i = 0;
+
+    while (iter != map.end())
     {
-        QStringList tempMakeAndModel = {};
-        QString currentStr = tempPrinterModel.left(i);
-
-        foreach (auto keyPPDs, map.keys())
+        qDebug() << iter.value().ppdname;
+        if (type == USB && iter.value().ppdname.contains("driverless"))
         {
+            iter = map.erase(iter);
+        }
+        else
+        {
+            iter++;
 
-            if (type == USB && map[keyPPDs].ppdname.contains("driverless"))
+            QString handledPPDMakeAndModel;
+            handledPPDMakeAndModel = originStringHandle(iter.key());
+
+            QString tempHandledPPDMakeAndModel = nullptr;
+
+            foreach (auto &letter, handledPPDMakeAndModel)
             {
-                continue;
+                if (letter.isSpace())
+                {
+                    //qInfo() << "字符串中的空格，不处理！";
+                }
+                else
+                {
+                    tempHandledPPDMakeAndModel.append(letter);
+                }
+            }
+            handledPPDMakeAndModel.clear();
+            handledPPDMakeAndModel = tempHandledPPDMakeAndModel;
+
+            if(iter == map.begin() && 0 < handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
+            {
+                exactMatchFlag = false;
+                for(int i = 0; i < 4; ++i)
+                {
+                    tempMakeAndModel.append(iter.value().ppdname);
+                    if(iter != map.end())
+                    {
+                        iter++;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                ret.insert(0, tempMakeAndModel);
+                //上来最小的都比它大，没有继续比的意义了，直接结束跳出。
+                break;
             }
             else
             {
-                QString handledPPDMakeAndModel;
-                handledPPDMakeAndModel = originStringHandle(keyPPDs);
-
-                QString tempHandledPPDMakeAndModel = nullptr;
-
-                foreach (auto &letter, handledPPDMakeAndModel)
+                if(iter == map.end() && 0 > handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
                 {
-                    if (letter.isSpace())
+                    exactMatchFlag = false;
+                    for(int i = 0; i < 4; ++i)
                     {
-                        //qInfo() << "字符串中的空格，不处理！";
+                        tempMakeAndModel.append(iter.value().ppdname);
+                        if(iter != map.begin())
+                        {
+                            iter--;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        tempHandledPPDMakeAndModel.append(letter);
-                    }
+                    ret.insert(0, tempMakeAndModel);
+                    //最后的字符串的都比它小，取最后的三个PPD，直接结束跳出。
+                    break;
                 }
-                handledPPDMakeAndModel.clear();
-                handledPPDMakeAndModel = tempHandledPPDMakeAndModel;
-
-                if (handledPPDMakeAndModel.contains(currentStr, Qt::CaseInsensitive))
+                else
                 {
-                    if (i == size)
+                    if (0 == handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
                     {
                         exactMatchFlag = true;
-                        tempMakeAndModel.append(map[keyPPDs].ppdname);
+                        tempMakeAndModel.append(iter.value().ppdname);
                         ret.insert(size, tempMakeAndModel);
+                        //找到了相等的字符串，直接返回
                         break;
                     }
+                    else if(0 > handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
+                    {
+                        iterList[i%4] = iter.value().ppdname;
+                        i++;
+                        //比其小的字符串正常记录
+                    }
+                    else if(0 < handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
+                    {
+                        iterList[i%4] = iter.value().ppdname;
+                        i++;
+                        if(iter != map.end())
+                        {
+                            iter++;
+                            iterList[i%4] = iter.value().ppdname;
 
-                    if (ret.find(i) == ret.end())
-                    {
-                        numOfMatchedPPD++;
-                        tempMakeAndModel.append(map[keyPPDs].ppdname);
-                        ret.insert((i), tempMakeAndModel);
+                            //从比其小变为了比其大，列表中的数据返回即可
+                            exactMatchFlag = false;
+                            for(int j = 0; j < 4; ++j)
+                            {
+                                tempMakeAndModel.append(iterList[j]);
+                            }
+                            qSort(tempMakeAndModel.begin(),tempMakeAndModel.end());
+                            ret.insert(0, tempMakeAndModel);
+                            break;
+                        }
+                        else
+                        {
+                            exactMatchFlag = false;
+
+                            for(int j = 0; j < 4; ++j)
+                            {
+                                tempMakeAndModel.append(iterList[j]);
+                            }
+                            qSort(tempMakeAndModel.begin(),tempMakeAndModel.end());
+                            ret.insert(0, tempMakeAndModel);
+                            break;
+                        }
+
                     }
-                    else
-                    {
-                        numOfMatchedPPD++;
-                        ret[i].append(map[keyPPDs].ppdname);
-                    }
-                }
-                if(3 == numOfMatchedPPD)
-                {
-                    break;
                 }
             }
         }
-
-        if (exactMatchFlag || (3 == numOfMatchedPPD))
-        {
-            break;
-        }
     }
+
+
     if (!exactMatchFlag)
     {
         qDebug() << "没找到和" << printerModel << "精准匹配的PPD文件";
+
         foreach (auto it, ret.keys())
         {
             qDebug() << "找到匹配" << it << "个字符的PPD文件" << ret[it].size() << "个";
