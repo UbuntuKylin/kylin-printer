@@ -25,6 +25,7 @@
 #include "matchppdsthread.h"
 #include "succedfailwindow.h"
 #include "propertywindow.h"
+#include "mylabel.h"
 
 class PopWindow : public QMainWindow
 {
@@ -35,7 +36,8 @@ public:
     static PopWindow *popMutual;
     ManualInstallWindow *manual; //手动安装驱动界面
 
-
+    static void setPrinterPropertyFunc(const std::string &printerName, const std::string &uri, const std::string &ppdName);
+    static const ukuiUsbPrinter getPrinterPropertyFunc();
 protected :
 
     bool eventFilter(QObject *obj, QEvent *event);
@@ -80,7 +82,7 @@ private:
     QLabel *seatlb; //占位
     QPushButton *closeButton;
     QPushButton *picButton;
-    QLineEdit *isMonitorEdit;
+    QLabel *isMonitorLabel;
     QPushButton *loadPic;   //加载中图标
     QLabel *isInstallLabel; //安装中标签
     QLabel *isSuccesslb;    //安装成功
@@ -108,7 +110,7 @@ private:
     bool isExact = false;                      //精准或模糊
 
     QString m_ppdName;
-    ukuiUsbPrinter m_printer;
+    static ukuiUsbPrinter sm_printer;
     ppdPrinterMap mymap;
     bool canFindPPD = false;
     /***********************链接CUPS查找PPDS部分用的**************************/

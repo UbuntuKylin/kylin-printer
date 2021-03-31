@@ -390,7 +390,7 @@ QPair<QMap<int, QStringList>, bool> MatchPPDsThread::exactMatch(QString printerM
                 }
                 else
                 {
-                    if (0 == handledPPDMakeAndModel.compare(tempPrinterModel, Qt::CaseInsensitive))
+                    if (handledPPDMakeAndModel.contains(tempPrinterModel, Qt::CaseInsensitive))
                     {
                         exactMatchFlag = true;
                         tempMakeAndModel.append(iter.value().ppdname);

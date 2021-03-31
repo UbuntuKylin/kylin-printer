@@ -52,7 +52,7 @@ void SuccedFailWindow::init()
     closeBtn        = new QToolButton(this);
     picBtn          = new QPushButton(this);//对号与叉子图标
     printerName     = new MyLabel(this);//打印机名称
-    messageLineEdit = new QLineEdit(this);//消息
+    messageLineEdit = new MyLabel(this);//消息
     printTestBtn    = new QPushButton(this);//打印测试页按钮
     viewDeviceBtn   = new QPushButton(this);//查看设备
     reinstallBtn    = new QPushButton(this);//重新安装
@@ -80,7 +80,7 @@ void SuccedFailWindow::init()
 
 void SuccedFailWindow::setWindow()
 {
-    titleLabel->setFixedSize(80,20);
+    titleLabel->setFixedSize(120,30);
     titleLabel->setText(tr("打印机驱动"));
     closeBtn->setFixedSize(30,30);
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
@@ -96,7 +96,8 @@ void SuccedFailWindow::setWindow()
     printerName->setFixedSize(120,30);
 
     messageLineEdit->setFixedSize(240,30);
-    messageLineEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
+    // messageLineEdit->setFocusPolicy(Qt::NoFocus);
+    // messageLineEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
 
     printTestBtn->setFixedSize(120,36);
     printTestBtn->setText(tr("打印测试"));

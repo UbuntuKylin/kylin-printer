@@ -25,8 +25,6 @@
 #include "ukuiApt.h"
 #include "ukuiPrinter.h"
 
-
-
 class ManualInstallWindow : public QMainWindow
 {
     Q_OBJECT
@@ -43,7 +41,7 @@ public:
 
     QLineEdit *driverlocalation;//驱动位置
 
-
+    static const ukuiUsbPrinter getPrinterPropertyFunc();
 private:
 
     int WIDTH = 620;
@@ -100,8 +98,6 @@ private:
     bool debSuccess = false;
     int matchTag = 0;
 
-    ukuiUsbPrinter m_printer;
-
     QValidator *validator;
 
     void initManualControls();
@@ -151,5 +147,7 @@ private:
     bool m_isExact;
     ukuiApt *m_apt;
 };
+
+
 
 #endif // MANUALINSTALLWINDOW_H

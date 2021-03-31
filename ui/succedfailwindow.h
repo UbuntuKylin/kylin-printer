@@ -51,7 +51,7 @@ private:
     QToolButton *closeBtn;
     QPushButton *picBtn;//对号与叉子图标
     MyLabel *printerName;//打印机名称
-    QLineEdit *messageLineEdit;//消息
+    MyLabel *messageLineEdit;//消息
 
     QPushButton *viewDeviceBtn;//查看设备
     QPushButton *reinstallBtn;//重新安装

@@ -90,6 +90,14 @@ int main(int argc, char *argv[])
     qRegisterMetaType<DeviceInformation>("DeviceInformation");
     qRegisterMetaType<DeviceInformation>("DeviceInformation&");
     qInstallMessageHandler(myMessageOutput);
+    //高清屏幕自适应,适配990高DPI
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+  QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+  QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+  QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif
     QApplication app(argc, argv);
     QStringList homePath = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
     int fd = open(QString(homePath.at(0) + "/.config/kylin-printer%1.lock").arg(getenv("DISPLAY")).toUtf8().data(),

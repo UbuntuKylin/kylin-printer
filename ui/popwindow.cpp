@@ -2,7 +2,7 @@
 #include "xatom-helper.h"
 
 #define g_cupsConnection (CupsConnection4PPDs::getInstance()) //CUPS连接建立实例化
-
+ukuiUsbPrinter PopWindow:: sm_printer = {};
 PopWindow *PopWindow ::popMutual = nullptr;
 PopWindow::PopWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -137,6 +137,9 @@ PopWindow::PopWindow(QWidget *parent)
     }
 
     //必须在检测插拔的槽函数后执行,先检测是否插拔再执行线程
+
+    /* 测试属性界面 */
+    // deviceNameSlot();
 }
 
 bool PopWindow::eventFilter(QObject *obj, QEvent *event)   //鼠标滑块点击
@@ -212,7 +215,7 @@ void PopWindow::initControls()
     //中间部分初始化
     picButton = new QPushButton(this);   //48*48的图标
     timer = new QTimer(this);            //延时
-    isMonitorEdit = new QLineEdit(this); //检测标签
+    isMonitorLabel = new QLabel(this); //检测标签
     loadPic = new QPushButton(this);     //加载图片:主题里8张图
     isInstallLabel = new QLabel(this);   //正在安装...标签
     isSuccesslb = new QLabel(this);      //安装成功或失败提示
@@ -256,7 +259,7 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     titlePictureBtn->setFixedSize(24, 24);
     titlePictureBtn->setIconSize(QSize(24, 24));
     titlePictureBtn->setStyleSheet("border-radius:4px;");
-    appNameLabel->setFixedSize(45, 20);
+    appNameLabel->setFixedSize(100, 30);
     appNameLabel->setText(tr("打印机"));
     seatlb->setText("  "); //占位
     closeButton->setIcon(QIcon::fromTheme("window-close-symbolic"));
@@ -270,28 +273,36 @@ void PopWindow::setControls(DeviceInformation printerDevice, bool isSuccess)
     picButton->setFixedSize(48, 48);
     picButton->setIconSize(QSize(48, 48));
     picButton->setStyleSheet("border-radius:4px;");
-    isMonitorEdit->setFixedSize(300, 30);
-    isMonitorEdit->setFocusPolicy(Qt::NoFocus);
-    QString tempName = printerDevice.vendor + "+" + printerDevice.model;
-    int length = tempName.length();
-    if(length > 23)
-    {
-        tempName = tempName.replace(20,length-20,"...");
-    }
-    isMonitorEdit->setText("检测到打印机:" + tempName);
+    isMonitorLabel->setFixedSize(300, 30);
+    QString totalName = "检测到打印机：" + printerDevice.vendor + "+" + printerDevice.model;
+    // int length = totalName.length();
+    // if(length > 23)
+    // {
+    //     totalName = totalName.replace(20,length-20,"...");
+    // }
+    isMonitorLabel->setText(totalName);
     printerName = printerDevice.vendor + "+" + printerDevice.model;
-    isMonitorEdit->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
+    // isMonitorLabel->setStyleSheet("QLineEdit{border:0px;background-color:transparent;}");
+
+    // 文字过长进行省略并悬浮提示
+    QFontMetrics fontmts = isMonitorLabel->fontMetrics();
+    int dif = fontmts.width(totalName) - isMonitorLabel->width();
+    if (dif > 0) {
+        QString str = fontmts.elidedText(totalName,Qt::ElideRight,isMonitorLabel->width());
+        isMonitorLabel->setText(str);
+        isMonitorLabel->setToolTip(printerName);
+    }
 
     //加载图标、安装中...
     loadPic->setIcon(QIcon::fromTheme("ukui-loading-0")); //初始默认图片0
     loadPic->setFixedSize(24, 24);
     loadPic->setIconSize(QSize(24, 24));
     loadPic->setStyleSheet("border-radius:4px;");
-    isInstallLabel->setFixedSize(80, 20);
+    isInstallLabel->setFixedSize(140, 30);
     isInstallLabel->setText("正在安装...");
 
     //是否安装成功
-    isSuccesslb->setFixedSize(120, 20);
+    isSuccesslb->setFixedSize(140, 30);
     isSucceed = isSuccess;
     searchResult = 0 ;
     //底部部分
@@ -310,7 +321,7 @@ void PopWindow::setPopWindow()
     deviceViewBtn->hide();
     manualInstallBtn->hide();
     //检测设备布局
-    monitorMessageLayout->addWidget(isMonitorEdit);
+    monitorMessageLayout->addWidget(isMonitorLabel);
     monitorMessageLayout->setContentsMargins(0, 0, 25, 0);
     monitorMessageWid->setLayout(monitorMessageLayout);
     monitorMessageWid->setFixedHeight(30);
@@ -393,7 +404,8 @@ void PopWindow::matchResultSlot(resultPair res)
         ppdList = res.first.first();
         qDebug()<<"PPDList:"<<ppdList;
         qDebug()<< "精准:" << printer.uri << res.first.first() << printer.vendor;
-        m_printer.ppdName = res.first.first().at(0).toStdString();
+        sm_printer.ppdName = res.first.first().at(0).toStdString();
+
         searchResult = 1;
 
     }
@@ -417,7 +429,7 @@ void PopWindow::matchResultSlot(resultPair res)
         ppdList = it.value();
         qDebug() << "模糊:" << printer.uri << ppdList.at(0) << printer.vendor;
         searchResult = 2;
-        m_printer.ppdName = res.first.first().at(0).toStdString();
+        sm_printer.ppdName = res.first.first().at(0).toStdString();
 
     }
 
@@ -435,10 +447,11 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
     printerDevice.vendor = (printerDevice.vendor).replace(QRegExp("\\s"),"+");//打印机名称和型号中不能有空格，
     printerDevice.model = (printerDevice.model).replace(QRegExp("\\s"),"+");  //替换为“+”再继续。
     name = printerDevice.vendor + QString("+") + printerDevice.model;
-    m_printer.name = name.toStdString();
-    m_printer.vendor = printerDevice.vendor.toStdString();
-    m_printer.uri = printerDevice.uri.toStdString();
-    m_printer.prodect = printerDevice.model.toStdString();
+
+    sm_printer.name = name.toStdString();
+    sm_printer.vendor = printerDevice.vendor.toStdString();
+    sm_printer.uri = printerDevice.uri.toStdString();
+    sm_printer.prodect = printerDevice.model.toStdString();
 
 
     //    根据打印机型号等信息调用接口查找并安装。之后安装后会返回成功与否isSuccess
@@ -448,7 +461,7 @@ void PopWindow::popDisplay(DeviceInformation printerDevice, bool isSuccess)
     {
         qDebug() << "气泡弹出";
         qDebug() << i;
-//        qDebug()<<"不带好的撒活动那活动"<<m_printer.name.c_str()<<m_printer.uri.c_str()<<m_printer.ppdName.c_str();
+
         timer->start(150); //动态加载loading图片
         QString temp = name;
         qDebug() << "timeTag 判断";
@@ -506,9 +519,9 @@ void PopWindow::loadingPicDisplay()
     {
         //TODO:ui和功能分开
         bool ret = ukuiPrinter::getInstance().addPrinter(
-                    m_printer.uri,
-                    m_printer.name,
-                    m_printer.ppdName,
+                    sm_printer.uri,
+                    sm_printer.name,
+                    sm_printer.ppdName,
                     "");
         if (ret == true)
         {
@@ -534,8 +547,10 @@ void PopWindow::loadingPicDisplay()
         deviceViewBtn->hide();
         manualInstallBtn->show();
         timer->stop();
-        emit basicParameter(m_printer.name.c_str(),m_printer.uri.c_str(),ppdList.at(0));
-//        qDebug()<<"PopWindow:"<<m_printer.name.c_str()<<"       "<<m_printer.uri.c_str()<<"   "<<ppdList.at(0);
+        emit basicParameter(sm_printer.name.c_str(),
+                            sm_printer.uri.c_str(),
+                            ppdList.at(0));
+
     }
 }
 
@@ -546,7 +561,8 @@ void PopWindow::print()
     //    emit printSignal(QStringList);
     const QString testFileName = "/usr/share/cups/data/testprint";
     bool res = false;
-    res = ukuiPrinter::getInstance().printTestPage(m_printer.name,testFileName.toStdString());
+    res = ukuiPrinter::getInstance().printTestPage(sm_printer.name,
+                                                   testFileName.toStdString());
     if(res)
     {
         printTimer->start(5000);
@@ -565,7 +581,7 @@ void PopWindow::print()
     }
     mainWid->hide();//点击了打印测试页就要隐藏气泡弹窗
     qInfo() << "======================打印测试页结果为================";
-    qInfo() << m_printer.name.c_str();
+    qInfo() << sm_printer.name.c_str();
     qInfo() << res;
 }
 
@@ -581,7 +597,11 @@ void PopWindow::showManualWindow()
 {
 
     mainWid->hide();//点击了手动安装时就要隐藏气泡弹窗
-    emit this->signalClickManualButton(m_printer.vendor.c_str(), m_printer.prodect.c_str(), m_printer.uri.c_str(), ppdList, isExact);
+    emit this->signalClickManualButton(sm_printer.vendor.c_str(),
+                                       sm_printer.prodect.c_str(),
+                                       sm_printer.uri.c_str(),
+                                       ppdList,
+                                       isExact);
 }
 
 void PopWindow::prematchResultSlot()
@@ -589,35 +609,60 @@ void PopWindow::prematchResultSlot()
     qDebug() << "prematchResultSlot";
     emit signalFindPPDsThread();
 
-    QString temp = m_printer.vendor.c_str();
+    QString temp = sm_printer.vendor.c_str();
     temp.append(" ");
-    temp.append(m_printer.prodect.c_str());
+    temp.append(sm_printer.prodect.c_str());
 
     QTimer::singleShot(10000, [=]() {
-        signalMatchPPDsThread(m_printer.vendor.c_str(),m_printer.prodect.c_str(), mymap, USB);
+        signalMatchPPDsThread(sm_printer.vendor.c_str(),
+                              sm_printer.prodect.c_str(),
+                              mymap,
+                              USB);
     });
 
 }
 
 void PopWindow::deviceNameSlot()
 {
+//    emit printerNameSignal(ManualInstallWindow::getPrinterPropertyFunc().name.c_str(),ManualInstallWindow::getPrinterPropertyFunc().ppdName.c_str());//无论模糊精准都要传此基本三个参数
+//    mainWid->hide();//点击查看设备要隐藏气泡
+
     bool ret = ukuiPrinter::getInstance().addPrinter(
-                m_printer.uri,
-                m_printer.name,
-                m_printer.ppdName,
+                ManualInstallWindow::getPrinterPropertyFunc().uri,
+                ManualInstallWindow::getPrinterPropertyFunc().name,
+                ManualInstallWindow::getPrinterPropertyFunc().ppdName,
                 "");
     if(ret)
     {
         qDebug()<<"精准匹配成功时显示气泡界面打印机名称:"<<printerName;
-        emit printerNameSignal(printerName,m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
+        emit printerNameSignal(ManualInstallWindow::getPrinterPropertyFunc().name.c_str(),
+                               ManualInstallWindow::getPrinterPropertyFunc().ppdName.c_str());//无论模糊精准都要传此基本三个参数
         mainWid->hide();//点击查看设备要隐藏气泡
     }
     else
     {
         qDebug()<<"非精准匹配时，显示手动安装界面的打印机名称:"<<manual->printerName->text();
-        emit printerNameSignal(manual->printerName->text(),m_printer.ppdName.c_str());//无论模糊精准都要传此基本三个参数
+        emit printerNameSignal(ManualInstallWindow::getPrinterPropertyFunc().name.c_str(),
+                               ManualInstallWindow::getPrinterPropertyFunc().ppdName.c_str());//无论模糊精准都要传此基本三个参数
         mainWid->hide();//点击查看设备要隐藏气泡
     }
 
 
+}
+
+const ukuiUsbPrinter PopWindow::getPrinterPropertyFunc()
+{
+    return sm_printer;
+}
+
+void PopWindow::setPrinterPropertyFunc(const std::string &printerName, const std::string &uri, const std::string &ppdName)
+{
+    sm_printer.name = printerName;
+    qDebug() << QString::fromStdString(sm_printer.name);
+
+    sm_printer.uri = uri;
+    qDebug() << QString::fromStdString(sm_printer.uri);
+
+    sm_printer.ppdName = ppdName;
+    qDebug() << QString::fromStdString(sm_printer.ppdName);
 }

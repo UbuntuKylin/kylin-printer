@@ -1,5 +1,6 @@
 #include "manualinstallwindow.h"
 #include "succedfailwindow.h"
+#include "popwindow.h"
 #include "xatom-helper.h"
 
 ManualInstallWindow::ManualInstallWindow(QWidget *parent) : QMainWindow(parent), m_apt(nullptr)
@@ -139,7 +140,7 @@ void ManualInstallWindow::dropDebInstall(QString debPath)
                     msg->exec();
                     disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
                     disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
-                    delete m_apt;
+                    m_apt->deleteLater();
                     m_apt = nullptr;
                     return ;
                 }
@@ -215,7 +216,7 @@ void ManualInstallWindow::setManualControls()
     titlePic->setFixedSize(24, 24);
     titlePic->setIconSize(QSize(24, 24));
     titlePic->setStyleSheet("border-radius:4px;");
-    titleLabel->setFixedSize(180, 20);
+    titleLabel->setFixedSize(240, 30);
     titleLabel->setText(tr("手动安装打印机驱动"));
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
     closeBtn->setFixedSize(30, 30);
@@ -247,16 +248,16 @@ void ManualInstallWindow::setManualControls()
     debName ->setText("test.ppd");
 
     //三行lineEdit
-    Namelb->setText(tr("名称"));
+    Namelb->setText(tr("名称："));
     printerName->setFixedSize(442, 36);
     printerName->setText("default-printer-lasevcP1106");
     printerName->setAcceptDrops(false);
 
-    locationlb->setText(tr("位置"));
+    locationlb->setText(tr("位置："));
     driverlocalation->setFixedSize(442, 36);
     driverlocalation->setText(tr("办公室"));
     driverlocalation->setAcceptDrops(false);
-    ppdlb->setText(tr("驱动"));
+    ppdlb->setText(tr("驱动："));
     ppd->setFixedSize(442, 36);
 //    ppd->setText(tr("手动选择驱动方案"));
     dropDownList->setFixedSize(442, 36);
@@ -342,7 +343,7 @@ void ManualInstallWindow::addLocalDriverSlot()//系统弹窗的选择deb包
                     msg->exec();
                     disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
                     disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
-                    delete m_apt;
+                    m_apt->deleteLater();
                     m_apt = nullptr;
                     return ;
                 }
@@ -370,7 +371,7 @@ void ManualInstallWindow:: alreadyInstallSlot()
     if(m_apt!=nullptr){
         disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
         disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
-        delete m_apt;
+        m_apt->deleteLater();
         m_apt = nullptr;
     }
     return ;
@@ -547,7 +548,7 @@ void ManualInstallWindow::onPackageInstalled(ukuiInstallStatus status)
             msg->exec();
             disconnect(m_apt, &ukuiApt::reportInstallStatus, this, &ManualInstallWindow::onPackageInstalled);
             disconnect(m_apt, &ukuiApt::alreadyInstallSignal,this, &ManualInstallWindow::alreadyInstallSlot);
-            delete m_apt;
+            m_apt->deleteLater();
             m_apt = nullptr;
             return ;
         }
@@ -600,14 +601,16 @@ void ManualInstallWindow::manualAddPrinter()
         msg->exec();
         return ;
     }
-    m_printer.name = printerName->text().toStdString();
-    m_printer.uri = m_uri.toStdString();
-    m_printer.ppdName = dropDownList->currentText().toStdString();
-    qDebug()<<m_printer.name.c_str()<<" "<<m_printer.uri.c_str()<<" "<<m_printer.ppdName.c_str();
+
+    PopWindow::setPrinterPropertyFunc(printerName->text().toStdString(),
+                                      m_uri.toStdString(),
+                                      dropDownList->currentText().toStdString());
+
+    qDebug()<<getPrinterPropertyFunc().name.c_str()<<" "<<getPrinterPropertyFunc().uri.c_str()<<" "<<getPrinterPropertyFunc().ppdName.c_str();
     bool isManualInstallSuccess = ukuiPrinter::getInstance().addPrinter(
-                m_printer.uri,
-                m_printer.name,
-                m_printer.ppdName,
+                getPrinterPropertyFunc().uri,
+                getPrinterPropertyFunc().name,
+                getPrinterPropertyFunc().ppdName,
                 "");
 
     if(isManualInstallSuccess == true)
@@ -621,4 +624,9 @@ void ManualInstallWindow::manualAddPrinter()
         emit manualAddSignal(printerName->text(),isManualInstallSuccess);
     }
     mainWid->hide();
+}
+
+const ukuiUsbPrinter ManualInstallWindow::getPrinterPropertyFunc()
+{
+    return PopWindow::getPrinterPropertyFunc();
 }

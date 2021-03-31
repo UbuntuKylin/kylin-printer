@@ -75,7 +75,7 @@ void PropertyWindow::initWindow()
 
 void PropertyWindow::setWindow()
 {
-    titleLabel->setFixedSize(80,20);
+    titleLabel->setFixedSize(260,30);
     titleLabel->setText(tr("打印机属性"));
     closeBtn->setFixedSize(30,30);
     closeBtn->setIcon(QIcon::fromTheme("window-close-symbolic"));
@@ -91,16 +91,19 @@ void PropertyWindow::setWindow()
     bigPic->setIcon(QIcon(":/svg/printer_logo.svg"));
     bigPic->setStyleSheet("border-radius:4px;");
 
-    printerName->setText(tr("名称"));
-    printerLocation->setText(tr("位置"));
-    printerPPD->setText(tr("驱动"));
+    printerName->setText(tr("名称："));
+    printerLocation->setText(tr("位置："));
+    printerPPD->setText(tr("驱动："));
     printTestBtn->setText("打印测试页");
     printTestBtn->setFixedSize(120,36);
     nameLineEdit->setFocusPolicy(Qt::NoFocus);
+    nameLineEdit->setAcceptDrops(false);
     nameLineEdit->setFixedSize(400,36);
     locationLineEdit->setFocusPolicy(Qt::NoFocus);
+    locationLineEdit->setAcceptDrops(false);
     locationLineEdit->setFixedSize(400,36);
     ppdLineEdit->setFocusPolicy(Qt::NoFocus);
+    ppdLineEdit->setAcceptDrops(false);
     ppdLineEdit->setFixedSize(400,36);
 
 
