@@ -1,0 +1,33 @@
+Source: kylin-printer
+Section: utils
+Priority: optional
+Maintainer: jiangdingyuan <jiangdingyuan@kylinos.cn>
+Build-Depends: debhelper (>=9),
+               cmake,
+			   qtbase5-dev,
+               qt5-qmake,
+               qtchooser,
+               qtscript5-dev,
+               qttools5-dev-tools,
+               qtbase5-dev-tools,
+			   libqapt-dev,
+			   libcups2-dev,
+		       libqapt3-runtime,
+               libgsettings-qt-dev,
+			   libqt5x11extras5-dev,
+               libkf5windowsystem-dev,
+               libx11-dev,
+			   pkgconf
+Standards-Version: 4.4.1
+Homepage: https://github.com/ubuntukylin/kylin-printer
+#Vcs-Browser: https://github.com/ubuntukylin/kylin-printer
+#Vcs-Git: https://github.com/ubuntukylin/kylin-printer.git
+
+Package: kylin-printer
+Architecture: any
+Depends:libqapt3,
+        libcups2,
+        libqapt3-runtime,
+        ${shlibs:Depends}, 
+        ${misc:Depends}
+Description: kylin-printer
