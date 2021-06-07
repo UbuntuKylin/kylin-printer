@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <title>网络打印机总结详细描述</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="%E7%BD%91%E7%BB%9C%E6%89%93%E5%8D%B0%E6%9C%BA%E6%80%BB%E7%BB%93%E8%AF%A6%E7%BB%86%E6%8F%8F%E8%BF%B0_files/katex.css">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <style>
+      /**
+ * prism.js Github theme based on GitHub's theme.
+ * @author Sam Clarke
+ */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #333;
+  background: none;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.4;
+
+  -moz-tab-size: 8;
+  -o-tab-size: 8;
+  tab-size: 8;
+
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+  padding: .8em;
+  overflow: auto;
+  /* border: 1px solid #ddd; */
+  border-radius: 3px;
+  /* background: #fff; */
+  background: #f5f5f5;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+  padding: .1em;
+  border-radius: .3em;
+  white-space: normal;
+  background: #f5f5f5;
+}
+
+.token.comment,
+.token.blockquote {
+  color: #969896;
+}
+
+.token.cdata {
+  color: #183691;
+}
+
+.token.doctype,
+.token.punctuation,
+.token.variable,
+.token.macro.property {
+  color: #333;
+}
+
+.token.operator,
+.token.important,
+.token.keyword,
+.token.rule,
+.token.builtin {
+  color: #a71d5d;
+}
+
+.token.string,
+.token.url,
+.token.regex,
+.token.attr-value {
+  color: #183691;
+}
+
+.token.property,
+.token.number,
+.token.boolean,
+.token.entity,
+.token.atrule,
+.token.constant,
+.token.symbol,
+.token.command,
+.token.code {
+  color: #0086b3;
+}
+
+.token.tag,
+.token.selector,
+.token.prolog {
+  color: #63a35c;
+}
+
+.token.function,
+.token.namespace,
+.token.pseudo-element,
+.token.class,
+.token.class-name,
+.token.pseudo-class,
+.token.id,
+.token.url-reference .token.variable,
+.token.attr-name {
+  color: #795da3;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+.token.title,
+.token.title .token.punctuation {
+  font-weight: bold;
+  color: #1d3e81;
+}
+
+.token.list {
+  color: #ed6a43;
+}
+
+.token.inserted {
+  background-color: #eaffea;
+  color: #55a532;
+}
+
+.token.deleted {
+  background-color: #ffecec;
+  color: #bd2c00;
+}
+
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+
+/* JSON */
+.language-json .token.property {
+  color: #183691;
+}
+
+.language-markup .token.tag .token.punctuation {
+  color: #333;
+}
+
+/* CSS */
+code.language-css,
+.language-css .token.function {
+  color: #0086b3;
+}
+
+/* YAML */
+.language-yaml .token.atrule {
+  color: #63a35c;
+}
+
+code.language-yaml {
+  color: #183691;
+}
+
+/* Ruby */
+.language-ruby .token.function {
+  color: #333;
+}
+
+/* Markdown */
+.language-markdown .token.url {
+  color: #795da3;
+}
+
+/* Makefile */
+.language-makefile .token.symbol {
+  color: #795da3;
+}
+
+.language-makefile .token.variable {
+  color: #183691;
+}
+
+.language-makefile .token.builtin {
+  color: #0086b3;
+}
+
+/* Bash */
+.language-bash .token.keyword {
+  color: #0086b3;
+}
+
+/* highlight */
+pre[data-line] {
+  position: relative;
+  padding: 1em 0 1em 3em;
+}
+pre[data-line] .line-highlight-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  display: block;
+  width: 100%;
+}
+
+pre[data-line] .line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: inherit 0;
+  margin-top: 1em;
+  background: hsla(24, 20%, 50%,.08);
+  background: linear-gradient(to right, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
+  pointer-events: none;
+  line-height: inherit;
+  white-space: pre;
+}
+
+pre[data-line] .line-highlight:before, 
+pre[data-line] .line-highlight[data-end]:after {
+  content: attr(data-start);
+  position: absolute;
+  top: .4em;
+  left: .6em;
+  min-width: 1em;
+  padding: 0 .5em;
+  background-color: hsla(24, 20%, 50%,.4);
+  color: hsl(24, 20%, 95%);
+  font: bold 65%/1.5 sans-serif;
+  text-align: center;
+  vertical-align: .3em;
+  border-radius: 999px;
+  text-shadow: none;
+  box-shadow: 0 1px white;
+}
+
+pre[data-line] .line-highlight[data-end]:after {
+  content: attr(data-end);
+  top: auto;
+  bottom: .4em;
+}html body{font-family:"Helvetica Neue",Helvetica,"Segoe UI",Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ul,html body>ol{margin-bottom:16px}html body ul,html body ol{padding-left:2em}html body ul.no-list,html body ol.no-list{padding:0;list-style-type:none}html body ul ul,html body ul ol,html body ol ol,html body ol ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:bold;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:bold}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em !important;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::before,html body code::after{letter-spacing:-0.2em;content:"\00a0"}html body pre>code{padding:0;margin:0;font-size:.85em !important;word-break:normal;white-space:pre;background:transparent;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;font-size:.85em !important;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:before,html body pre tt:before,html body pre code:after,html body pre tt:after{content:normal}html body p,html body blockquote,html body ul,html body ol,html body dl,html body pre{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body pre,html body code{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview .pagebreak,.markdown-preview .newpage{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center !important}.markdown-preview:not([for="preview"]) .code-chunk .btn-group{display:none}.markdown-preview:not([for="preview"]) .code-chunk .status{display:none}.markdown-preview:not([for="preview"]) .code-chunk .output-div{margin-bottom:16px}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0}@media screen and (min-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{font-size:14px !important;padding:1em}}@media print{html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,0.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{padding:0 1.6em;margin-top:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc li{margin-bottom:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{list-style-type:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% -  300px);padding:2em calc(50% - 457px -  150px);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+    </head>
+    <body for="html-export">
+      <div class="mume markdown-preview  ">
+      <font face="Sarasa Mono HC">
+<h1>网络打印机总结详细描述 0605</h1>
+<h2>主要任务目标</h2>
+<ol>
+<li>调研网络打印机发现-&gt;连接并安装驱动-&gt;打印测试页整个流程。</li>
+<li>尽可能多的搜集网络打印机设备信息，方便准确定位打印机。</li>
+<li>尽可能多的发现打印机连接中出现问题并分析原因。</li>
+<li>调研网络打印机的安装-&gt;打印测试页流程能否和usb打印机合并，减少开发工作量。</li>
+</ol>
+<h2>硬件环境</h2>
+<p>测试打印机：Brother DCP-7195DW<br>
+固件版本：F1911142047 1.08</p>
+<h2>软件环境</h2>
+<p>系统环境：v10SP1<br>
+cups=2.3.1-9kylin1k4<br>
+avahi-daemon=0.7-4kylin7<br>
+snmp=5.8+dfsg-2kylin2k2</p>
+<h2>任务阶段性成果详细描述</h2>
+<ol>
+<li>发现了<code>7</code>种自动发现并添加网络机打印的方案。</li>
+</ol>
+<ul>
+<li>
+<p>为什么要寻找多种打印机协议发现方案，而不是只用一种方法？</p>
+<ul>
+<li>由于需要适配打印机种类繁多，无法保证所有的打印机都遵守某一种协议。此外，打印机厂商也可能没有完全按照协议去设置打印机的固件属性。为保证所有打印机的正常连接，引入不同的打印机连接方案，也是代码强鲁棒性的保证。</li>
+</ul>
+</li>
+<li>
+<p>调研期间，通过不同的协议及获取数据的方式，发现了7种不同的发现网络打印机的方案。（详细测试结果请查阅<code>网络打印协议测试.xlsx</code>）</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方案连接协议</th>
+<th style="text-align:left">连接流程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">lpd</td>
+<td style="text-align:left">lpinfo/avahi 获取 lpd uri<br>-&gt;向snmpwalk发送请求获取设备信息<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">ipp(1)</td>
+<td style="text-align:left">lpinfo 获取 ipp uri<br>-&gt;通过名称猜测厂商和型号<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">ipp(2)</td>
+<td style="text-align:left">ippfind 获取 ipp uri<br>-&gt;向snmpwalk发送请求获取设备信息<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">socket</td>
+<td style="text-align:left">avahi获取ip<br>-&gt;并处理成socket uri<br>-&gt;向snmpwalk发送请求获取设备信息<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">dnssd</td>
+<td style="text-align:left">lpinfo 获取 dnssd uri<br>-&gt;通过名称猜测厂商和型号<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">http(1)</td>
+<td style="text-align:left">avahi使用_printer._tcp获取http<br>-&gt;uri向snmpwalk发送请求获取设备信息<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+<tr>
+<td style="text-align:left">http(2)</td>
+<td style="text-align:left">avahi获取ip 并处理成http uri<br>-&gt;向snmpwalk发送请求获取设备信息<br>-&gt;调用cups接口连接打印机</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>问题分析：</p>
+<ul>
+<li>lpd无法打印问题：在Ubuntu 20.04, UOS, deepin, v10sp1开展对比测试,lpd 
+无法打印现象相同：可以通过驱动添加打印机，可以发送打印请求，但是均无法打印成功。从现象上来看，应该可以排除系统的问题，可能是测试使用的打印机不支
+持lpd协议导致。</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li>其中<code>5</code>种手动可以通过输入ip地址来添加网络打印机。</li>
+</ol>
+<ul>
+<li>支持ip地址查询，需要满足能够通过ip地址发现打印机厂商、型号、uri地址等信息，经过筛选，有五种方案可以做到这一点。</li>
+</ul>
+<ol start="3">
+<li>其他已知但还需要调研的工作</li>
+</ol>
+<ul>
+<li>关于https打印机<br>
+https打印机在初次安装时无法打印，原因是打印机的设置中没有打开https的端口导致，需要手动在打印机的设置中将https端口打开；需要调研其他打印机是否也是如此。</li>
+</ul>
+<h2>各功能点实现方案</h2>
+<ul>
+<li>功能点划分
+<ul>
+<li>由于打印机的安装(需要<code>打印机名称</code>、<code>uri</code>、<code>pdd文件路径</code>)、寻找驱动(需要<code>厂商</code>、<code>型号</code>)、打印测试页已经在usb打印机阶段完成，现阶段只需要完成参数收集的任务即可。</li>
+<li>有关snmpwalk，可以参考<code>snmpwalk_usage.md(pdf,html)</code></li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>打印机定位及获取ip</li>
+</ol>
+<ul>
+<li>通过封装好的qt类ZConfServiceBrowser实现:当发现网络中出现打印机时，触发serviceEntryAdded信号,开发者可以使用qt的<code>信号-槽</code>机制实现定制开发。</li>
+<li>通过<code>3.</code>解析到的域名获取到打印机的ip地址。</li>
+<li>用户手动输入</li>
+</ul>
+<ol start="2">
+<li>打印机网络节点获取<br>
+打印机在接入网络的时候，会生成一个局域网内唯一的网络节点标识，用来确认打印机在网络中的位置。</li>
+</ol>
+<ul>
+<li>通过<code>1.</code>获取到ip地址，用snmpwalk查询</li>
+<li>通过<code>3.</code>获取到域名，用snmpwalk查询</li>
+<li>通过<code>3.</code>获取到的uri解析获取</li>
+</ul>
+<ol start="3">
+<li>打印机uri获取</li>
+</ol>
+<ul>
+<li>通过lpinfo 获取</li>
+<li>通过ippfind 获取</li>
+<li>通过<code>1.</code>获取到ip，组合成uri</li>
+<li>通过avahi获取到域名</li>
+</ul>
+<ol start="4">
+<li>打印机厂商型号信息获取</li>
+</ol>
+<ul>
+<li>通过<code>1.</code> 获取到的ip，用snmpwalk查询</li>
+<li>通过<code>3.</code>获取到域名，用snmpwalk查询</li>
+<li>通过<code>5.</code>打印机名称猜测(可能不稳定，因为用户可以自由设置打印机名称)</li>
+</ul>
+<ol start="5">
+<li>打印机名称获取<br>
+打印机名称可以任意设置，仅是本机的标识，并不作为打印机连接的凭证。不过一般打印机的默认的格式为<code>厂商名_型号名</code>。</li>
+</ol>
+<ul>
+<li>可以通过lpinfo命令获取</li>
+<li>通过<code>4</code>获取到的厂商型号信息组合生成</li>
+</ul>
+<ol start="6">
+<li>打印机其他信息获取</li>
+</ol>
+<ul>
+<li>uuid 打印机硬件生成，可以作为打印机唯一标识
+<ul>
+<li>通过avahi获取</li>
+</ul>
+</li>
+<li>serial 打印机序列号，打印机硬件生成，可以作为打印机唯一标识
+<ul>
+<li>通过<code>1.</code>获取到ip地址，用snmpwalk查询</li>
+<li>通过<code>3.</code>获取到域名，用snmpwalk查询</li>
+</ul>
+</li>
+</ul>
+<h2>名词解释</h2>
+<h3>printer</h3>
+<h4>ipp</h4>
+<ul>
+<li>互联网打印协议(IPP；InternetPrintingProtocol)是一个在互联网上打印的标准网络协议，它容许用户可以透过互联网作遥距打印及管理打印工作等工作。</li>
+</ul>
+<h4>lpd</h4>
+<ul>
+<li>行式打印机后台程序(Line Printer Daemon)是一个安装在UNIX打印服务器上的后台程序。它的功能是等待接受客户使用行式打印机远程（LPR）协议传来的打印工作。</li>
+</ul>
+<h3>zeroconf</h3>
+<h4>zeroconf</h4>
+<ul>
+<li>零配置网络协议规范(Zero configuration 
+networking)，是一种自动生成可用ip地址的网络技术、自动化配置管理网络的一种规范。即计算机或一些网络设备可以无需任何配置可以自动互连并
+可发现各自相关的服务。多应用于局域网，如自动发现可用打印机、MacBook可以自动发现连入同一局域网内iphone设备并使用相关服务等。</li>
+</ul>
+<h4>avahi</h4>
+<ul>
+<li>Avahi是zeroconf协议的开源实现，基本是使用在Linux和FreeBSD上。包含了一整套多播DNS(multicastDNS)/DNS-SD网络服务的实现，使用的发布授权是LGPL。</li>
+<li>在apple上，与avahi对应的实现是Bonjour。苹果的AirDrop以及一系列互联应用及服务便是基于Bonjour开发的。</li>
+</ul>
+<h3>snmp</h3>
+<h4>snmp</h4>
+<ul>
+<li>简单网络管理协议(Simple Network Management Protocol)是专门设计用于在 IP 网络管理网络节点（服务器、工作站、路由器、交换机及HUBS等）的一种标准协议，它是一种应用层协议。</li>
+</ul>
+<h4>MIB</h4>
+<ul>
+<li>管理信息库(Management Information 
+Base),是TCP/IP网络管理协议标准框架的内容之一，MIB定义了受管设备必须保存的数据项、允许对每个数据项进行的操作及其含义，即管理系统可
+访问的受管设备的控制和状态信息等数据变量都保存在MIB中。可以使用snmp协议访问MIB中的内容。</li>
+</ul>
+<h4>OID</h4>
+<ul>
+<li>对象标识符(Object Identifier，OID)是与对象相关联的用来无歧义地标识对象的全局唯一的值，可保证对象在通信与信息处理中正确地定位和管理。通俗地讲，OID就是网络通信中对象的身份证。</li>
+</ul>
+<h3>network</h3>
+<h4>udp</h4>
+<ul>
+<li>用户数据报协议(UDP，User Datagram Protocol)。UDP 为应用程序提供了一种无需建立连接就可以发送封装的 IP 数据包的方法。</li>
+</ul>
+<h4>dnssd</h4>
+<ul>
+<li>DNS服务发现(DNS Service Discovery)是一种使用标准 DNS 编程接口、服务器和数据包格式来浏览网络服务的方法。</li>
+</ul>
+<h3>other</h3>
+<h4>UUID</h4>
+</font><ul><font face="Sarasa Mono HC">
+</font><li><font face="Sarasa Mono HC">UUID 是 通用唯一识别码（Universally Unique
+ 
+Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能
+有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。<br>
+</font></li>
+</ul>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+    
+    
+  </body></html>
